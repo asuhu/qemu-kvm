@@ -127,7 +127,7 @@ sleep 5
 read -p "Will you upgrade qemu (y or n): " upgrade_qemu
     [ -z "${upgrade_qemu}" ] && upgrade_qemu=n
 if [ ${upgrade_qemu} = "y" ] ;then
-##########Yum Ceph-devel
+##########CentOS7 Yum Ceph-devel Nautilus鹦鹉螺
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git deltarpm
 yum -y install flex bison
 #make[1]: flex: Command not foundmake[1]: bison: Command not found
@@ -135,32 +135,35 @@ yum -y install flex bison
 echo -e "\033[31m "will yum install ceph-devel" \033[0m \n"
 sleep 5
 cat > /etc/yum.repos.d/ceph.repo << "EOF"
-[ceph]
+[Ceph]
 name=Ceph packages for $basearch
-baseurl=https://download.ceph.com/rpm-mimic/el7/$basearch
+baseurl=http://download.ceph.com/rpm-nautilus/el7/$basearch
 enabled=1
-priority=2
 gpgcheck=1
+type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 
-[ceph-noarch]
+[Ceph-noarch]
 name=Ceph noarch packages
-baseurl=https://download.ceph.com/rpm-mimic/el7/noarch
+baseurl=http://download.ceph.com/rpm-nautilus/el7/noarch
 enabled=1
-priority=2
 gpgcheck=1
+type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 
 [ceph-source]
 name=Ceph source packages
-baseurl=https://download.ceph.com/rpm-mimic/el7/SRPMS
-enabled=0
-priority=2
+baseurl=http://download.ceph.com/rpm-nautilus/el7/SRPMS
+enabled=1
 gpgcheck=1
+type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 EOF
 
-#sudo yum install ceph-deploy librbd* -y
+#rpm -ivh https://download.ceph.com/rpm-nautilus/el7/noarch/ceph-release-1-1.el7.noarch.rpm
+#ceph-deploy是ceph官方提供的部署工具
+#librbd1 RADOS block device client library https://packages.debian.org/sid/librbd1
+#librbd-dev RADOS block device client library (development files) https://packages.debian.org/zh-cn/sid/librbd-dev
 sudo yum install ceph-deploy librbd-devel librbd1 -y
 
 if [ ! -f '/usr/bin/ceph-deploy' ];then
