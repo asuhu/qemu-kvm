@@ -7,7 +7,10 @@ vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
 
 
 if [ ! -e /data/iso/centos7.iso ];then
-wget -O /data/iso/centos7.iso http://mirror.0x.sg/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso
+wget -O /data/iso/centos7.iso http://mirror.0x.sg/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1908.iso
+fi
+if [ $? -gt 0 ];then
+wget -O /data/iso/centos7.iso  http://arv.asuhu.com/ftp/isos/CentOS-7-x86_64-Minimal-1908.iso
 fi
 #
 number=$1
@@ -24,7 +27,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --cdrom /data/iso/centos7.iso \
 --input tablet,bus=usb \
 --boot cdrom,hd,network,menu=on \
---disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse,format=qcow2 \
+--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 --graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=linux --os-variant=centos7.0 --video cirrus \
 --debug --clock offset=utc --force --autostart
 else
@@ -35,7 +38,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --cdrom /data/iso/centos7.iso \
 --input tablet,bus=usb \
 --boot cdrom,hd,network,menu=on \
---disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse,format=qcow2 \
+--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 --graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=linux --os-variant=centos7.0 --video cirrus \
 --debug --clock offset=utc --force --autostart
 fi

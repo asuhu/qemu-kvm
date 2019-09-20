@@ -24,7 +24,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --cdrom /data/iso/centos6.iso \
 --input tablet,bus=usb \
 --boot cdrom,hd,network,menu=on \
---disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse,format=qcow2 \
+--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 --graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=linux --os-variant=centos6.9 --video cirrus \
 --debug --clock offset=utc --force --autostart
 else
@@ -35,7 +35,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --cdrom /data/iso/centos6.iso \
 --input tablet,bus=usb \
 --boot cdrom,hd,network,menu=on \
---disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse,format=qcow2 \
+--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 --graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=linux --os-variant=centos6.9 --video cirrus \
 --debug --clock offset=utc --force --autostart
 fi

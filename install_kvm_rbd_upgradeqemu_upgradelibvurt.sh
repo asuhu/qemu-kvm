@@ -1,8 +1,8 @@
 #!/bin/bash
-##dos2unix the_test.sh
-#install qemu-kvm
-#upgrade qemu
-#upgrade libvirt
+#dos2unix the_test.sh
+#yum install qemu-kvm libvirt
+#Source code compilation upgrade qemu
+#Source code compilation upgrade libvirt
 
 if  [ -z "$(grep ' 7\.' /etc/redhat-release)" ] ;then
 echo "This script need CentOS 7"
@@ -19,7 +19,7 @@ wip=$(curl -s --connect-timeout 25 ipinfo.io | head -n 2|grep ip | awk -F '"' '{
 if [ -z ${wip} ];then
 wip=$(curl -4 -s --connect-timeout 25 https://api.ip.la)
 elif  [ -z ${wip} ];then
-wip=kvm3
+wip=kvm.local
 fi
 
 #kernel
@@ -27,8 +27,6 @@ grubby --update-kernel=ALL --remove-args="rhgb"
 
 #
 if [ ! -e '/usr/bin/wget' ]; then yum -y install wget ;fi
-
-
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git
 yum clean all && yum makecache && yum repolist
 yum check-update && yum -y update
@@ -54,18 +52,13 @@ yum check-update && yum -y update
 #ovs-vsctl add-br br-lan
 #ovs-vsctl add-br br-wan
 
-#yum install make bison flex automake autoconf boost-devel fuse-devel gcc-c++ \
-#libtool libuuid-devel libblkid-devel keyutils-libs-devel cryptopp-devel fcgi-devel \
-#libcurl-devel expat-devel gperftools-devel libedit-devel libatomic_ops-devel snappy-devel \
-#leveldb-devel libaio-devel xfsprogs-devel git libudev-devel gperftools redhat-lsb bzip2 ntp \
-#iptables-services wget expect vim -y
-
 spkvm=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
 if [ $spkvm -le 0 ];then
-echo "not support Virtualization Technological, check please."
+echo "No support Virtualization Technological, check please."
 kill -9 $$
 fi
 
+#
 sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 sed -i 's/#UseDNS yes/UseDNS no/g' /etc/ssh/sshd_config
 systemctl restart sshd
@@ -75,17 +68,18 @@ hostnamectl set-hostname ${wip}
 systemctl disable postfix && systemctl stop postfix
 systemctl stop firewalld && systemctl disable firewalld
 systemctl stop NetworkManager && systemctl disable NetworkManager
-
 #
 sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 setenforce 0
 
+#numad numactl numactl-devel numactl-libs
 yum -y install numa*
 systemctl enable numad && systemctl start numad
 echo 1 > /proc/sys/kernel/numa_balancing
 echo 0 > /sys/kernel/mm/ksm/merge_across_nodes
 echo 1 > /sys/kernel/mm/ksm/run
 
+#
 yum -y install ntp
 timedatectl set-timezone Asia/Shanghai
 ntpdate -s us.ntp.org.cn
@@ -93,47 +87,50 @@ sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.c
 systemctl enable ntpd.service && systemctl start ntpd.service
 hwclock -w
 
-yum -y install libvirt*
-yum -y install virt-*
+#yum -y install libvirt*  #包含qemu-kvm libvirt
+#yum -y install virt-*
+
+#yum -y install virt-manager virt-manager-common  #图形管理工具
+#rpm -ql qemu-kvm-tools /usr/bin/kvm_stat
+
+yum -y install lsof unzip
+yum -y install qemu-kvm qemu-kvm-tools qemu-kvm-common virt-who virt-viewer virt-v2v virt-top virt-install virt-dib  #This step will install rpcbind
+yum -y install libvirt libvirt-admin libvirt-bash-completion libvirt-cim libvirt-client libvirt-daemon \
+libvirt-daemon-config-network libvirt-daemon-config-nwfilter libvirt-daemon-driver-interface libvirt-daemon-driver-lxc \
+libvirt-daemon-driver-network libvirt-daemon-driver-nodedev libvirt-daemon-driver-nwfilter libvirt-daemon-driver-qemu \
+libvirt-daemon-driver-secret libvirt-daemon-driver-storage libvirt-daemon-driver-storage-core libvirt-daemon-driver-storage-disk \
+libvirt-daemon-driver-storage-gluster libvirt-daemon-driver-storage-iscsi libvirt-daemon-driver-storage-logical libvirt-daemon-driver-storage-mpath \
+libvirt-daemon-driver-storage-rbd libvirt-daemon-driver-storage-scsi libvirt-daemon-kvm libvirt-daemon-lxc \
+libvirt-dbus libvirt-devel libvirt-docs libvirt-libs libvirt-lock-sanlock libvirt-login-shell libvirt-nss libvirt-python libvirt-snmp
 systemctl enable libvirtd && systemctl restart libvirtd
-yum install libguestfs-tools virt-install -y
-
-#qemu-kvm
-#qemu-kvm-common
-#Package virt-manager-common-1.4.3-3.el7.noarch already installed and latest version
-#Package 1:virt-v2v-1.36.10-6.el7_5.2.x86_64 already installed and latest version
-#Package virt-manager-1.4.3-3.el7.noarch already installed and latest version
-#Package virt-install-1.4.3-3.el7.noarch already installed and latest version
-#Package 1:virt-p2v-maker-1.36.10-6.el7_5.2.x86_64 already installed and latest version
-#Package virt-what-1.18-4.el7.x86_64 already installed and latest version
-#Package virt-p2v-1.36.10-1.el7.noarch already installed and latest version
-#Package virt-viewer-5.0-10.el7.x86_64 already installed and latest version
-#Package virt-top-1.0.8-24.el7.x86_64 already installed and latest version
-#Package virt-who-0.21.7-1.el7_5.noarch already installed and latest version
-#Package 1:virt-dib-1.36.10-6.el7_5.2.x86_64 already installed and latest version
-
+#
+yum install libguestfs-tools -y
+#disable rpcbind
+systemctl stop rpcbind && systemctl mask rpcbind  #yum -y remove rpcbind
+#136.243.4.154 | 2019-09-17 06:34:07 | 100000 4 111/udp; 100000 3 111/udp; 100000 2 111/udp; 100000 4 111/udp; 100000 3 111/udp; 100000 2 111/udp;
+#The Portmapper service runs on port 111 tcp/udp.
+#
 #tuned-adm list
-#virtual-host                - Optimize for running KVM guests
+#virtual-host  - Optimize for running KVM guests
 tuned-adm profile virtual-host
-
+#
 mkdir -p /data/{iso,image,instance}
-
 yum -y install  MySQL-python  wget bc lrzsz iftop xmlstarlet csh gcc gcc-c++ vim wget dos2unix
 echo "alias vi='vim'"    >> /etc/profile
 
 echo -e "\033[31m "kvm environment install done" \033[0m \n"
-sleep 5
+sleep 2
 #######################################
 read -p "Will you upgrade qemu (y or n): " upgrade_qemu
     [ -z "${upgrade_qemu}" ] && upgrade_qemu=n
 if [ ${upgrade_qemu} = "y" ] ;then
-##########CentOS7 Yum Ceph-devel Nautilus鹦鹉螺
+##########CentOS7 Yum Ceph-devel Nautilus(鹦鹉螺)
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git deltarpm
-yum -y install flex bison
-#make[1]: flex: Command not foundmake[1]: bison: Command not found
+yum -y install flex bison    #make[1]: flex: Command not foundmake[1]: bison: Command not found
 
-echo -e "\033[31m "will yum install ceph-devel" \033[0m \n"
+echo -e "\033[31m "will yum install ceph-devel Nautilus" \033[0m \n"
 sleep 5
+if ping -c 10 216.58.200.4 >/dev/null;then
 cat > /etc/yum.repos.d/ceph.repo << "EOF"
 [Ceph]
 name=Ceph packages for $basearch
@@ -159,7 +156,33 @@ gpgcheck=1
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 EOF
+else
+cat > /etc/yum.repos.d/ceph.repo << "EOF"
+[Ceph]
+name=Ceph packages for $basearch
+baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/$basearch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://download.ceph.com/keys/release.asc
 
+[Ceph-noarch]
+name=Ceph noarch packages
+baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/noarch
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://download.ceph.com/keys/release.asc
+
+[ceph-source]
+name=Ceph source packages
+baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/SRPMS
+enabled=1
+gpgcheck=1
+type=rpm-md
+gpgkey=https://download.ceph.com/keys/release.asc
+EOF
+fi
 #rpm -ivh https://download.ceph.com/rpm-nautilus/el7/noarch/ceph-release-1-1.el7.noarch.rpm
 #ceph-deploy是ceph官方提供的部署工具
 #librbd1 RADOS block device client library https://packages.debian.org/sid/librbd1
@@ -170,23 +193,31 @@ if [ ! -f '/usr/bin/ceph-deploy' ];then
 echo "Install ceph-devel error"
 kill -9 $$
 fi
+
 #Upgrade qemu and support ceph storage
-echo -e "\033[31m will upgrade the qemu ... \033[0m \n"
+echo -e "\033[31m Upgrade qemu and support ceph storage ... \033[0m \n"
 yum -y install zlib-devel glib2-devel autoconf automake libtool
-yum -y install pixman pixman-devel          #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-3.1.1
+yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
+qemuversion=qemu-2.12.1
 cd ~/
-if wget -4 -q -t 5 https://download.qemu.org/${qemuversion}.tar.bz2   #https://download.qemu.org/qemu-2.12.1.tar.xz
-then
+if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.bz2;then
 echo "download qemu success"
 else
-wget -4 -q http://arv.asuhu.com/ftp/so/${qemuversion}.tar.bz2
+wget -4 -q https://download.qemu.org/${qemuversion}.tar.bz2
 fi
-
+#
 tar -jxf ${qemuversion}.tar.bz2 && rm -rf ${qemuversion}.tar.bz2
 cd ~/${qemuversion}
- yum -y install libseccomp libseccomp-devel
-./configure --prefix=/usr --libdir=/usr/lib64 --sysconfdir=/etc --localstatedir=/var --libexecdir=/usr/libexec --enable-rbd --enable-seccomp
+yum -y install libseccomp libseccomp-devel
+yum -y install libaio-devel    #异步IO
+yum -y install bzip2-devel     #--enable-bzip2
+yum -y install snappy-devel #snappy support 
+yum -y install libcurl-devel 
+#yum -y install spice-server spice-server-devel # --enable-spice
+#yum -y install sparse #Install sparse binary  --enable-sparse   #Sparse is a semantic checker for C programs; it can be used to find a number of potential problems with kernel code
+ ./configure --prefix=/usr --libdir=/usr/lib64 --sysconfdir=/etc --localstatedir=/var --libexecdir=/usr/libexec \
+--enable-rbd --enable-seccomp --enable-linux-aio --enable-bzip2 --enable-tools  --enable-curl  --enable-snappy
+#
 make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && make install
 
 #Exit if qemu is not installed successfully
@@ -200,14 +231,13 @@ ln -s /usr/bin/qemu-system-x86_64  /usr/libexec/qemu-kvm
 #getconf               iptables               newns                    qemu-kvm             virt-p2v
 #getconf               iptables               newns                    qemu-kvm.orig        virt-p2v
 
-sleep 1
+sleep 5
 virsh version
 qemu-img --help | grep rbd
-sleep 1
  else
 echo "Not upgraded qemu"
 fi
-############libvirt
+##############libvirt##################
 read -p "Will you upgrade libvirt (y or n): " upgrade_libvirt
     [ -z "${upgrade_libvirt}" ] && upgrade_libvirt=n
 if [[ ${upgrade_libvirt} = "y" || ${upgrade_libvirt} = "Y" ]] ;then
@@ -216,7 +246,11 @@ for i in `find /etc/libvirt -name "*.conf" | xargs  ls`;do cp $i  ${i}.`date +"%
 #https://libvirt.org/sources/libvirt-5.7.0.tar.xz
 LibvirtVersion=libvirt-5.7.0
 cd ~
+if wget -4 -q -t 5 http://file.asuhu.com/kvm/${LibvirtVersion}.tar.xz;then
+echo "download libvirt success"
+else
 wget https://libvirt.org/sources/${LibvirtVersion}.tar.xz
+fi
 tar -Jxvf ${LibvirtVersion}.tar.xz && rm -rf ${LibvirtVersion}.tar.xz
 cd ${LibvirtVersion}
 yum -y install libxml2-devel gnutls-devel device-mapper-devel python-devel libnl-devel
