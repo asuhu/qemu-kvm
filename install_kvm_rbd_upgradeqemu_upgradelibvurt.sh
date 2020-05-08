@@ -1,8 +1,18 @@
 #!/bin/bash
-#dos2unix the_test.sh
+#dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
 #yum install qemu-kvm libvirt
 #Source code compilation upgrade qemu
 #Source code compilation upgrade libvirt
+#
+#virsh version
+#Compiled against library: libvirt 4.5.0
+#Using library: libvirt 4.5.0
+#Using API: QEMU 4.5.0
+#Running hypervisor: QEMU 1.5.3
+#CentOS Linux release 7.7.1908 (Core)
+#
+#yum install centos-release-qemu-ev
+#Running hypervisor: QEMU 2.12.1
 
 if  [ -z "$(grep ' 7\.' /etc/redhat-release)" ] ;then
 echo "This script need CentOS 7"
@@ -25,7 +35,6 @@ fi
 #kernel
 grubby --update-kernel=ALL --remove-args="rhgb"
 
-#
 if [ ! -e '/usr/bin/wget' ]; then yum -y install wget ;fi
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git
 yum clean all && yum makecache && yum repolist
@@ -34,17 +43,6 @@ yum check-update && yum -y update
 #yum groupinstall "X Window System" "GNOME Desktop" -y
 #rm /etc/systemd/system/default.target
 #ln -sf /lib/systemd/system/graphical.target /etc/systemd/system/default.target
-
-#cat >> /etc/security/limits.conf <<EOF
-#* soft nproc 65535  
-#* hard nproc 65535  
-#* soft nofile 65535  
-#* hard nofile 65535  
-#EOF
-
-#echo "ulimit -SH 65535" >> /etc/rc.d/rc.local
-#chmod +x /etc/rc.d/rc.local
-#sysctl -p
 
 #openvswitch
 #rpm -ivh https://repos.fedorapeople.org/openstack/EOL/openstack-juno/epel-7/openvswitch-2.3.1-2.el7.x86_64.rpm
@@ -87,9 +85,6 @@ sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.c
 systemctl enable ntpd.service && systemctl start ntpd.service
 hwclock -w
 
-#yum -y install libvirt*  #包含qemu-kvm libvirt
-#yum -y install virt-*
-
 #yum -y install virt-manager virt-manager-common  #图形管理工具
 #rpm -ql qemu-kvm-tools /usr/bin/kvm_stat
 
@@ -120,11 +115,11 @@ echo "alias vi='vim'"    >> /etc/profile
 
 echo -e "\033[31m "kvm environment install done" \033[0m \n"
 sleep 2
-#######################################
+####################################################################
 read -p "Will you upgrade qemu (y or n): " upgrade_qemu
     [ -z "${upgrade_qemu}" ] && upgrade_qemu=n
 if [ ${upgrade_qemu} = "y" ] ;then
-##########CentOS7 Yum Ceph-devel Nautilus(鹦鹉螺)
+##########CentOS7 Yum Install Ceph-devel Nautilus(鹦鹉螺)
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git deltarpm
 yum -y install flex bison    #make[1]: flex: Command not foundmake[1]: bison: Command not found
 
@@ -187,36 +182,43 @@ fi
 #ceph-deploy是ceph官方提供的部署工具
 #librbd1 RADOS block device client library https://packages.debian.org/sid/librbd1
 #librbd-dev RADOS block device client library (development files) https://packages.debian.org/zh-cn/sid/librbd-dev
-sudo yum install ceph-deploy librbd-devel librbd1 -y
+yum -y install ceph-deploy librbd-devel librbd1
 
 if [ ! -f '/usr/bin/ceph-deploy' ];then
 echo "Install ceph-devel error"
 kill -9 $$
 fi
 
+yum install -y python36 python36-setuptools python36-devel
+#qemu-4.2.0
+#warning: Python 2 support is deprecated
+#warning: Python 3 will be required for building future versions of QEMU
+
 #Upgrade qemu and support ceph storage
 echo -e "\033[31m Upgrade qemu and support ceph storage ... \033[0m \n"
+sleep 2
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-2.12.1
-cd ~/
-if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.bz2;then
+qemuversion=qemu-4.2.0
+cd ~
+if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
 echo "download qemu success"
 else
-wget -4 -q https://download.qemu.org/${qemuversion}.tar.bz2
+wget -4 -q https://download.qemu.org/${qemuversion}.tar.xz
 fi
 #
-tar -jxf ${qemuversion}.tar.bz2 && rm -rf ${qemuversion}.tar.bz2
-cd ~/${qemuversion}
 yum -y install libseccomp libseccomp-devel
-yum -y install libaio-devel    #异步IO
-yum -y install bzip2-devel     #--enable-bzip2
-yum -y install snappy-devel #snappy support 
+yum -y install libaio-devel                   #异步IO
+yum -y install bzip2-devel                   #--enable-bzip2
+yum -y install snappy-devel                #snappy support 
 yum -y install libcurl-devel 
-#yum -y install spice-server spice-server-devel # --enable-spice
-#yum -y install sparse #Install sparse binary  --enable-sparse   #Sparse is a semantic checker for C programs; it can be used to find a number of potential problems with kernel code
+yum -y install gtk3-devel                    #--enable-gtk
+yum -y install spice-server spice-protocol spice-server-devel  #Install sparse binary  --enable-sparse   #Sparse is a semantic checker for C programs; it can be used to find a number of potential problems with kernel code
+tar -xf ${qemuversion}.tar.xz && rm -rf ${qemuversion}.tar.xz
+cd ~/${qemuversion}
  ./configure --prefix=/usr --libdir=/usr/lib64 --sysconfdir=/etc --localstatedir=/var --libexecdir=/usr/libexec \
---enable-rbd --enable-seccomp --enable-linux-aio --enable-bzip2 --enable-tools  --enable-curl  --enable-snappy
+--enable-rbd --enable-seccomp --enable-linux-aio --enable-bzip2 --enable-tools  --enable-curl  --enable-snappy \
+--enable-gtk --enable-spice
 #
 make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && make install
 
@@ -228,8 +230,7 @@ fi
 
 mv -f /usr/libexec/qemu-kvm{,.orig}
 ln -s /usr/bin/qemu-system-x86_64  /usr/libexec/qemu-kvm
-#getconf               iptables               newns                    qemu-kvm             virt-p2v
-#getconf               iptables               newns                    qemu-kvm.orig        virt-p2v
+#qemu-kvm	qemu-kvm.orig	virt-p2v
 
 sleep 5
 virsh version
@@ -237,29 +238,31 @@ qemu-img --help | grep rbd
  else
 echo "Not upgraded qemu"
 fi
-##############libvirt##################
+######################libvirt##########################
 read -p "Will you upgrade libvirt (y or n): " upgrade_libvirt
     [ -z "${upgrade_libvirt}" ] && upgrade_libvirt=n
 if [[ ${upgrade_libvirt} = "y" || ${upgrade_libvirt} = "Y" ]] ;then
 
 for i in `find /etc/libvirt -name "*.conf" | xargs  ls`;do cp $i  ${i}.`date +"%Y%m%d_%H%M%S"`;done
-#https://libvirt.org/sources/libvirt-5.7.0.tar.xz
-LibvirtVersion=libvirt-5.7.0
+#https://libvirt.org/sources/libvirt-6.2.0.tar.xz
+LibvirtVersion=libvirt-6.2.0
 cd ~
 if wget -4 -q -t 5 http://file.asuhu.com/kvm/${LibvirtVersion}.tar.xz;then
 echo "download libvirt success"
 else
 wget https://libvirt.org/sources/${LibvirtVersion}.tar.xz
 fi
-tar -Jxvf ${LibvirtVersion}.tar.xz && rm -rf ${LibvirtVersion}.tar.xz
-cd ${LibvirtVersion}
 yum -y install libxml2-devel gnutls-devel device-mapper-devel python-devel libnl-devel
 yum -y install libpciaccess libpciaccess-devel cmake
 yum -y install libxslt yajl-devel yajl
 yum -y install netcf netcf-devel libnl3-devel
-./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc --libdir=/usr/lib64 --with-netcf
-#./autogen.sh --system  #保持对操作系统发型版中安装可执行程序和共享库的目录的一致性
+yum -y install python-docutils           #configure: error: "rst2html5/rst2html is required to build libvirt
+tar -xf ${LibvirtVersion}.tar.xz && rm -rf ${LibvirtVersion}.tar.xz
+cd ${LibvirtVersion}
+mkdir build && cd build
+../configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc --libdir=/usr/lib64 --with-netcf
 sudo make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && sudo make install
+#./autogen.sh --system  #保持对操作系统发型版中安装可执行程序和共享库的目录的一致性
 
 systemctl daemon-reload
 service libvirtd restart
@@ -268,6 +271,5 @@ else
 fi
 
 virsh version
-#/etc/libvirt
 #/etc/libvirt  libvirt.conf  libvirtd.conf  lxc.conf  qemu  qemu.conf #https://wiki.archlinux.org/index.php/Libvirt_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 #/var/lib/libvirt

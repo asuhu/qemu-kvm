@@ -5,7 +5,10 @@
  <ol>
 <li>需要服务器支持虚拟化技术Virtualization Technological</li>
 <li>tuned-adm profile virtual-host   #Optimize for running KVM guests</li>
-<li>chmod +x install_kvm_rbd_upgradeqemu_upgradelibvurt.sh</li>
+<li>--video virtio   #支持高分辨率https://libvirt.org/formatdomain.html#elementsVideo</li>
+<li>--boot uefi,cdrom,hd,network,menu=on   #UEFI 启动（需要升级qemu-kvm）</li>
+<li>--machine q35   #Standard PC (Q35 + ICH9, 2009) (alias of pc-q35-4.2)</li>
+<li>--features kvm_hidden=on  #Allow the KVM hypervisor signature to be hidden from the guest</li>
 </ol>
 
  <hr />
@@ -22,6 +25,8 @@
     bash -x win2k12r2.sh $1&nbsp;$2&nbsp;$3&nbsp;$4&nbsp;&nbsp;&nbsp;&nbsp;(name Memory CpuCont  DiskSize)<br />
 <li>创建Windows Server 2016</li>
     bash -x win2k16.sh $1&nbsp;$2&nbsp;$3&nbsp;$4&nbsp;&nbsp;&nbsp;&nbsp;(name Memory CpuCont  DiskSize)<br />
+    <li>创建Windows Server 2019</li>
+    bash -x win2k19.sh $1&nbsp;$2&nbsp;$3&nbsp;$4&nbsp;&nbsp;&nbsp;&nbsp;(name Memory CpuCont  DiskSize)<br />
     </ol>
     
  <hr />

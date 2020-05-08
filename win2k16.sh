@@ -17,10 +17,12 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network bridge=br0,model=virtio \
 --cdrom /data/iso/2016.iso \
 --input tablet,bus=usb \
+--machine q35 \
+--features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
---graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=windows --os-variant=win2k16 --video cirrus \
+--graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=windows --os-variant=win2k16 --video virtio \
 --debug --clock offset=localtime --force --autostart
 else
 #Network NAT
@@ -28,10 +30,12 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network network=default,model=virtio \
 --cdrom /data/iso/2016.iso \
 --input tablet,bus=usb \
+--machine q35 \
+--features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
---graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=windows --os-variant=win2k16 --video cirrus \
+--graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=windows --os-variant=win2k16 --video virtio \
 --debug --clock offset=localtime --force --autostart
 fi
 #osinfo-query os
