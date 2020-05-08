@@ -36,5 +36,5 @@
  <ol>
 <li>bash -x delete.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(delete.sh name)</li>
 </ol>
-  
+    <h2>升级后的版本</h2>
  <img src="https://raw.githubusercontent.com/asuhu/qemu-kvm/master/kvm.png"  alt="virsh version" />
