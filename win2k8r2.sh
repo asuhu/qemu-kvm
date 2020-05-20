@@ -17,22 +17,24 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network bridge=br0,model=virtio \
 --cdrom /data/iso/2008r2.iso \
 --input tablet,bus=usb \
+--features kvm_hidden=on,hyperv_relaxed=on,hyperv_spinlocks=on,hyperv_spinlocks_retries=8191,hyperv_vapic=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 --graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=windows --os-variant=win2k8r2 --video cirrus \
---debug --clock offset=localtime --force --autostart
+--debug --clock offset=localtime,hypervclock_present=yes --force --autostart
 else
 #Network NAT
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
 --network network=default,model=virtio \
 --cdrom /data/iso/2008r2.iso \
 --input tablet,bus=usb \
+--features kvm_hidden=on,hyperv_relaxed=on,hyperv_spinlocks=on,hyperv_spinlocks_retries=8191,hyperv_vapic=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 --graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=windows --os-variant=win2k8r2 --video cirrus \
---debug --clock offset=localtime --force --autostart
+--debug --clock offset=localtime,hypervclock_present=yes --force --autostart
 fi
 #osinfo-query os
 echo "VM$number" , vnc port ${port} , vnc password ${vncpass}

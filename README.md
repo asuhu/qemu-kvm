@@ -9,6 +9,7 @@
 <li>--boot uefi,cdrom,hd,network,menu=on   #UEFI 启动（需要升级qemu-kvm）</li>
 <li>--machine q35   #Standard PC (Q35 + ICH9, 2009) (alias of pc-q35-4.2)</li>
 <li>--features kvm_hidden=on  #Allow the KVM hypervisor signature to be hidden from the guest</li>
+<li>--features kvm_hidden=on,hyperv_relaxed=on,hyperv_spinlocks=on,hyperv_spinlocks_retries=8191,hyperv_vapic=on </li>
 </ol>
 
  <hr />

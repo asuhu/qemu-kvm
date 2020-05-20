@@ -26,7 +26,6 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network bridge=br0,model=virtio \
 --cdrom /data/iso/centos7.iso \
 --input tablet,bus=usb \
---machine q35 \
 --features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
@@ -39,7 +38,6 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network network=default,model=virtio \
 --cdrom /data/iso/centos7.iso \
 --input tablet,bus=usb \
---machine q35 \
 --features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
