@@ -29,8 +29,10 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
---graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=linux --os-variant=rhel7.7 --video virtio \
---debug --clock offset=utc --force --autostart
+--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
+--os-type=linux --os-variant=rhel7.7 --video virtio \
+--clock offset=utc \
+--debug --force --autostart
 else
 #Network NAT
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
@@ -41,8 +43,10 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
---graphics vnc,listen=0.0.0.0,port="$port",password="${vncpass}" --noautoconsole --os-type=linux --os-variant=rhel7.7  --video virtio \
---debug --clock offset=utc --force --autostart
+--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
+--os-type=linux --os-variant=rhel7.7 --video virtio \
+--clock offset=utc \
+--debug --force --autostart
 fi
 #osinfo-query os
 echo "VM$number" , vnc port ${port} , vnc password ${vncpass}
