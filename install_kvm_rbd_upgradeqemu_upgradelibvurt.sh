@@ -27,8 +27,6 @@ fi
 
 wip=$(curl -s --connect-timeout 25 ipinfo.io | head -n 2|grep ip | awk -F '"' '{print $4}')
 if [ -z ${wip} ];then
-wip=$(curl -4 -s --connect-timeout 25 https://api.ip.la)
-elif  [ -z ${wip} ];then
 wip=kvm.local
 fi
 
@@ -49,7 +47,7 @@ yum check-update && yum -y update
 #systemctl restart  openvswitch && systemctl enable openvswitch
 #ovs-vsctl add-br br-lan
 #ovs-vsctl add-br br-wan
-
+#
 spkvm=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
 if [ $spkvm -le 0 ];then
 echo "No support Virtualization Technological, check please."
@@ -182,6 +180,7 @@ fi
 #ceph-deploy是ceph官方提供的部署工具
 #librbd1 RADOS block device client library https://packages.debian.org/sid/librbd1
 #librbd-dev RADOS block device client library (development files) https://packages.debian.org/zh-cn/sid/librbd-dev
+#
 yum -y install ceph-deploy librbd-devel librbd1
 
 if [ ! -f '/usr/bin/ceph-deploy' ];then
@@ -189,6 +188,11 @@ echo "Install ceph-devel error"
 kill -9 $$
 fi
 
+#disable Ceph repo
+if ! which yum-config-manager;then yum -y install yum-utils;fi
+sudo yum-config-manager --disable Ceph Ceph-noarch ceph-source
+
+#yum -y install epel-release
 yum install -y python36 python36-setuptools python36-devel
 #qemu-4.2.0
 #warning: Python 2 support is deprecated
@@ -199,7 +203,7 @@ echo -e "\033[31m Upgrade qemu and support ceph storage ... \033[0m \n"
 sleep 2
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-4.2.0
+qemuversion=qemu-4.2.1
 cd ~
 if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
 echo "download qemu success"
