@@ -1,15 +1,9 @@
 #!/bin/bash
 #dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
+#
 #yum install qemu-kvm libvirt
 #Source code compilation upgrade qemu
 #Source code compilation upgrade libvirt
-#
-#virsh version
-#Compiled against library: libvirt 4.5.0
-#Using library: libvirt 4.5.0
-#Using API: QEMU 4.5.0
-#Running hypervisor: QEMU 1.5.3
-#CentOS Linux release 7.7.1908 (Core)
 #
 #yum install centos-release-qemu-ev
 #Running hypervisor: QEMU 2.12.1
@@ -53,28 +47,26 @@ if [ $spkvm -le 0 ];then
 echo "No support Virtualization Technological, check please."
 kill -9 $$
 fi
-
 #
+#SSH
 sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
 sed -i 's/#UseDNS yes/UseDNS no/g' /etc/ssh/sshd_config
 systemctl restart sshd
-
+#
+sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
+setenforce 0
 #
 hostnamectl set-hostname ${wip}
 systemctl disable postfix && systemctl stop postfix
 systemctl stop firewalld && systemctl disable firewalld
 systemctl stop NetworkManager && systemctl disable NetworkManager
 #
-sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
-setenforce 0
-
 #numad numactl numactl-devel numactl-libs
 yum -y install numa*
 systemctl enable numad && systemctl start numad
 echo 1 > /proc/sys/kernel/numa_balancing
 echo 0 > /sys/kernel/mm/ksm/merge_across_nodes
 echo 1 > /sys/kernel/mm/ksm/run
-
 #
 yum -y install ntp
 timedatectl set-timezone Asia/Shanghai
@@ -82,10 +74,8 @@ ntpdate -s us.ntp.org.cn
 sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.conf
 systemctl enable ntpd.service && systemctl start ntpd.service
 hwclock -w
-
+#
 #yum -y install virt-manager virt-manager-common  #图形管理工具
-#rpm -ql qemu-kvm-tools /usr/bin/kvm_stat
-
 yum -y install lsof unzip
 yum -y install qemu-kvm qemu-kvm-tools qemu-kvm-common virt-who virt-viewer virt-v2v virt-top virt-install virt-dib  #This step will install rpcbind
 yum -y install libvirt libvirt-admin libvirt-bash-completion libvirt-cim libvirt-client libvirt-daemon \
@@ -98,7 +88,8 @@ libvirt-dbus libvirt-devel libvirt-docs libvirt-libs libvirt-lock-sanlock libvir
 systemctl enable libvirtd && systemctl restart libvirtd
 #
 yum install libguestfs-tools -y
-#disable rpcbind
+#
+#Danger needs to be disabled rpcbind 
 systemctl stop rpcbind && systemctl mask rpcbind  #yum -y remove rpcbind
 #136.243.4.154 | 2019-09-17 06:34:07 | 100000 4 111/udp; 100000 3 111/udp; 100000 2 111/udp; 100000 4 111/udp; 100000 3 111/udp; 100000 2 111/udp;
 #The Portmapper service runs on port 111 tcp/udp.
@@ -110,8 +101,8 @@ tuned-adm profile virtual-host
 mkdir -p /data/{iso,image,instance}
 yum -y install  MySQL-python  wget bc lrzsz iftop xmlstarlet csh gcc gcc-c++ vim wget dos2unix
 echo "alias vi='vim'"    >> /etc/profile
-
-echo -e "\033[31m "kvm environment install done" \033[0m \n"
+#
+echo -e "\033[31m "KVM environment install done" \033[0m \n"
 sleep 2
 ####################################################################
 read -p "Will you upgrade qemu (y or n): " upgrade_qemu
@@ -182,25 +173,24 @@ fi
 #librbd-dev RADOS block device client library (development files) https://packages.debian.org/zh-cn/sid/librbd-dev
 #
 yum -y install ceph-deploy librbd-devel librbd1
-
+#
 if [ ! -f '/usr/bin/ceph-deploy' ];then
 echo "Install ceph-devel error"
 kill -9 $$
 fi
-
+#
 #disable Ceph repo
 if ! which yum-config-manager;then yum -y install yum-utils;fi
 sudo yum-config-manager --disable Ceph Ceph-noarch ceph-source
-
+#
 #yum -y install epel-release
 yum install -y python36 python36-setuptools python36-devel
-#qemu-4.2.0
 #warning: Python 2 support is deprecated
-#warning: Python 3 will be required for building future versions of QEMU
+#warning: Python 3 will be required for building future versions of QEMU 4.2.0
 
 #Upgrade qemu and support ceph storage
 echo -e "\033[31m Upgrade qemu and support ceph storage ... \033[0m \n"
-sleep 2
+sleep 1
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
 qemuversion=qemu-4.2.1
@@ -228,7 +218,7 @@ make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && make install
 
 #Exit if qemu is not installed successfully
 if [ ! -e '/usr/bin/qemu-system-x86_64' ]; then
-echo "Install ${qemuversion} error"
+echo -e "\033[31m Install ${qemuversion} Error... \033[0m \n"
 kill -9 $$
 fi
 
@@ -236,7 +226,7 @@ mv -f /usr/libexec/qemu-kvm{,.orig}
 ln -s /usr/bin/qemu-system-x86_64  /usr/libexec/qemu-kvm
 #qemu-kvm	qemu-kvm.orig	virt-p2v
 
-sleep 5
+sleep 2
 virsh version
 qemu-img --help | grep rbd
  else
@@ -246,10 +236,11 @@ fi
 read -p "Will you upgrade libvirt (y or n): " upgrade_libvirt
     [ -z "${upgrade_libvirt}" ] && upgrade_libvirt=n
 if [[ ${upgrade_libvirt} = "y" || ${upgrade_libvirt} = "Y" ]] ;then
-
+#
 for i in `find /etc/libvirt -name "*.conf" | xargs  ls`;do cp $i  ${i}.`date +"%Y%m%d_%H%M%S"`;done
 #https://libvirt.org/sources/libvirt-6.2.0.tar.xz
-LibvirtVersion=libvirt-6.2.0
+#https://libvirt.org/compiling.html#compiling  #Future installation
+LibvirtVersion=libvirt-6.6.0
 cd ~
 if wget -4 -q -t 5 http://file.asuhu.com/kvm/${LibvirtVersion}.tar.xz;then
 echo "download libvirt success"
@@ -261,19 +252,25 @@ yum -y install libpciaccess libpciaccess-devel cmake
 yum -y install libxslt yajl-devel yajl
 yum -y install netcf netcf-devel libnl3-devel
 yum -y install python-docutils           #configure: error: "rst2html5/rst2html is required to build libvirt
+yum -y install libtirpc-devel
 tar -xf ${LibvirtVersion}.tar.xz && rm -rf ${LibvirtVersion}.tar.xz
 cd ${LibvirtVersion}
 mkdir build && cd build
 ../configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc --libdir=/usr/lib64 --with-netcf
 sudo make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && sudo make install
+#Exit if Libvirt is not installed successfully
+if [ $? -ne 0 ];then
+echo -e "\033[31m ${LibvirtVersion} Install error ... \033[0m \n"
+kill -9 $$
+fi
 #./autogen.sh --system  #保持对操作系统发型版中安装可执行程序和共享库的目录的一致性
-
+#
 systemctl daemon-reload
 service libvirtd restart
 else
   echo "not upgrade libvirt"
 fi
-
+sleep 1
 virsh version
 #/etc/libvirt  libvirt.conf  libvirtd.conf  lxc.conf  qemu  qemu.conf #https://wiki.archlinux.org/index.php/Libvirt_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 #/var/lib/libvirt
