@@ -7,7 +7,7 @@ vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
 
 
 if [ ! -e /data/iso/centos7.iso ];then
-wget -O /data/iso/centos7.iso http://mirror.0x.sg/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1908.iso
+wget -O /data/iso/centos7.iso https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso
 fi
 if [ $? -gt 0 ];then
 wget -O /data/iso/centos7.iso  http://arv.asuhu.com/ftp/isos/CentOS-7-x86_64-Minimal-1908.iso

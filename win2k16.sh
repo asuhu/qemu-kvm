@@ -19,7 +19,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --input tablet,bus=usb \
 --input mouse,bus=usb \
 --input keyboard,bus=usb \
---features kvm_hidden=on,hyperv_relaxed=on,hyperv_spinlocks=on,hyperv_spinlocks_retries=8191,hyperv_vapic=on \
+--features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
@@ -35,7 +35,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --input tablet,bus=usb \
 --input mouse,bus=usb \
 --input keyboard,bus=usb \
---features kvm_hidden=on,hyperv_relaxed=on,hyperv_spinlocks=on,hyperv_spinlocks_retries=8191,hyperv_vapic=on \
+--features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
 --disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
