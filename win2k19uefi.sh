@@ -5,14 +5,6 @@
 #$4数字，代表磁盘大小
 vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
 
-
-if [ ! -e /data/iso/centos7.iso ];then
-wget -O /data/iso/centos7.iso https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso
-fi
-if [ $? -gt 0 ];then
-wget -O /data/iso/centos7.iso  http://arv.asuhu.com/ftp/isos/CentOS-7-x86_64-Minimal-1908.iso
-fi
-#
 number=$1
 port=$[5900+$number]
 mem=$2
@@ -22,30 +14,30 @@ Disksize=$4
 #bridging
 if brctl show | grep -v vir | grep br0;then
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
-	--description  "centos7" \
 	--network bridge=br0,model=virtio \
-	--cdrom /data/iso/centos7.iso \
+	--cdrom /data/iso/2016.iso \
 	--input tablet,bus=usb \
 	--features kvm_hidden=on \
-	--boot cdrom,hd,network,menu=on \
+	--boot uefi,cdrom,hd,network,menu=on \
+	--serial file,path=/data/"VM${number}"console.log \
 	--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 	--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
-	--os-type=linux --os-variant=rhel7.7 --video virtio \
-	--clock offset=utc \
+	--os-type=windows --os-variant=win2k19 --video virtio \
+	--clock offset=localtime,hypervclock_present=yes \
 	--debug --force --autostart
 else
 #Network NAT
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
-	--description  "centos7" \
 	--network network=default,model=virtio \
-	--cdrom /data/iso/centos7.iso \
+	--cdrom /data/iso/2016.iso \
 	--input tablet,bus=usb \
 	--features kvm_hidden=on \
-	--boot cdrom,hd,network,menu=on \
+	--boot uefi,cdrom,hd,network,menu=on \
+	--serial file,path=/data/"VM${number}"console.log \
 	--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 	--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
-	--os-type=linux --os-variant=rhel7.7 --video virtio \
-	--clock offset=utc \
+	--os-type=windows --os-variant=win2k19 --video virtio \
+	--clock offset=localtime,hypervclock_present=yes \
 	--debug --force --autostart
 fi
 #osinfo-query os

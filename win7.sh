@@ -14,31 +14,31 @@ Disksize=$4
 #bridging
 if brctl show | grep -v vir | grep br0;then
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
---network bridge=br0,model=virtio \
---cdrom /data/iso/7.iso \
---input tablet,bus=usb \
---features kvm_hidden=on \
---boot cdrom,hd,network,menu=on \
---serial file,path=/data/"VM${number}"console.log \
---disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
---graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
---os-type=windows --os-variant=win7 --video cirrus \
---clock offset=localtime,hypervclock_present=yes \
---debug --force --autostart
+	--network bridge=br0,model=virtio \
+	--cdrom /data/iso/7.iso \
+	--input tablet,bus=usb \
+	--features kvm_hidden=on \
+	--boot cdrom,hd,network,menu=on \
+	--serial file,path=/data/"VM${number}"console.log \
+	--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
+	--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
+	--os-type=windows --os-variant=win7 --video cirrus \
+	--clock offset=localtime,hypervclock_present=yes \
+	--debug --force --autostart
 else
 #Network NAT
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
---network network=default,model=virtio \
---cdrom /data/iso/7.iso \
---input tablet,bus=usb \
---features kvm_hidden=on \
---boot cdrom,hd,network,menu=on \
---serial file,path=/data/"VM${number}"console.log \
---disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
---graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
---os-type=windows --os-variant=win7 --video cirrus \
---clock offset=localtime,hypervclock_present=yes \
---debug --force --autostart
+	--network network=default,model=virtio \
+	--cdrom /data/iso/7.iso \
+	--input tablet,bus=usb \
+	--features kvm_hidden=on \
+	--boot cdrom,hd,network,menu=on \
+	--serial file,path=/data/"VM${number}"console.log \
+	--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
+	--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
+	--os-type=windows --os-variant=win7 --video cirrus \
+	--clock offset=localtime,hypervclock_present=yes \
+	--debug --force --autostart
 fi
 #osinfo-query os
 echo "VM$number" , vnc port ${port} , vnc password ${vncpass}

@@ -17,8 +17,6 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network bridge=br0,model=virtio \
 --cdrom /data/iso/win10.iso \
 --input tablet,bus=usb \
---input mouse,bus=usb \
---input keyboard,bus=usb \
 --features kvm_hidden=on \
 --boot uefi,cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
@@ -33,8 +31,6 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 --network network=default,model=virtio \
 --cdrom /data/iso/win10.iso \
 --input tablet,bus=usb \
---input mouse,bus=usb \
---input keyboard,bus=usb \
 --features kvm_hidden=on \
 --boot cdrom,hd,network,menu=on \
 --serial file,path=/data/"VM${number}"console.log \
