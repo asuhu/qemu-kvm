@@ -272,5 +272,29 @@ else
 fi
 sleep 1
 virsh version
+######################kvm_nested##########################
+read -p "Will you config KVM nested (y or n): " upgrade_nested
+    [ -z "${upgrade_nested}" ] && upgrade_nested=n && upgrade_nested=N
+if [[ ${upgrade_nested} = "y" || ${upgrade_nested} = "Y" ]] ;then
+#
+	kvm_nested=`lscpu |grep "Model name"|grep Intel|awk '{for (i=3;i<NF;i++){printf $i"  "} print $NF}'`
+		 if [ -z "${kvm_nested}" ];then
+			echo AMD
+				if [ `cat /sys/module/kvm_amd/parameters/nested` == 0 ];then
+						sudo sh -c "echo 'options kvm-amd nested=1' >> /etc/modprobe.d/dist.conf"
+						else
+						echo "Already configured nested"
+				fi
+	            else
+			echo Intel
+				if [ `cat /sys/module/kvm_intel/parameters/nested` == N ];then
+						sudo sh -c "echo 'options kvm-intel nested=y' >> /etc/modprobe.d/dist.conf"
+						else
+						echo "Already configured nested"
+				fi
+		fi
+else
+  echo "not upgrade_nested"
+fi
 #/etc/libvirt  libvirt.conf  libvirtd.conf  lxc.conf  qemu  qemu.conf #https://wiki.archlinux.org/index.php/Libvirt_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 #/var/lib/libvirt
