@@ -1,13 +1,15 @@
 #!/bin/bash
 #dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
-#
-#yum install qemu-kvm libvirt
-#Source code compilation upgrade qemu
-#Source code compilation upgrade libvirt
-#
+############################
+#Email  860116511@qq.com
+#1 yum install qemu-kvm libvirt
+#2 Source code compilation upgrade qemu
+#3 Source code compilation upgrade libvirt
+#4 config KVM nested
+############################
 #yum install centos-release-qemu-ev
 #Running hypervisor: QEMU 2.12.1
-
+############################
 if  [ -z "$(grep ' 7\.' /etc/redhat-release)" ] ;then
 echo "This script need CentOS 7"
 fi
