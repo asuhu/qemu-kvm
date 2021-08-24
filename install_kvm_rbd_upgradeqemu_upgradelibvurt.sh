@@ -13,15 +13,15 @@ echo "This script need CentOS 7"
 fi
 
 if  ! cat /etc/resolv.conf|grep nameserver ;then
-cat > /etc/resolv.conf << EOF
-nameserver 8.8.8.8
-nameserver 114.114.114.114
-EOF
+	cat > /etc/resolv.conf << EOF
+	nameserver 8.8.8.8
+	nameserver 114.114.114.114
+	EOF
 fi
 
 wip=$(curl -s --connect-timeout 25 ipinfo.io | head -n 2|grep ip | awk -F '"' '{print $4}')
 if [ -z ${wip} ];then
-wip=kvm.local
+	wip=kvm.local
 fi
 
 #kernel
@@ -44,7 +44,7 @@ yum check-update && yum -y update
 #
 spkvm=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
 if [ $spkvm -le 0 ];then
-echo "No support Virtualization Technological, check please."
+	echo "No support Virtualization Technological, check please."
 kill -9 $$
 fi
 #
@@ -175,7 +175,7 @@ fi
 yum -y install ceph-deploy librbd-devel librbd1
 #
 if [ ! -f '/usr/bin/ceph-deploy' ];then
-echo "Install ceph-devel error"
+	echo "Install ceph-devel error"
 kill -9 $$
 fi
 #
@@ -196,8 +196,8 @@ yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not pre
 qemuversion=qemu-4.2.1
 cd ~
 if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
-echo "download qemu success"
-else
+	echo "download qemu success"
+	else
 wget -4 -q https://download.qemu.org/${qemuversion}.tar.xz
 fi
 #
@@ -218,7 +218,7 @@ make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && make install
 
 #Exit if qemu is not installed successfully
 if [ ! -e '/usr/bin/qemu-system-x86_64' ]; then
-echo -e "\033[31m Install ${qemuversion} Error... \033[0m \n"
+	echo -e "\033[31m Install ${qemuversion} Error... \033[0m \n"
 kill -9 $$
 fi
 
@@ -237,38 +237,38 @@ read -p "Will you upgrade libvirt (y or n): " upgrade_libvirt
     [ -z "${upgrade_libvirt}" ] && upgrade_libvirt=n
 if [[ ${upgrade_libvirt} = "y" || ${upgrade_libvirt} = "Y" ]] ;then
 #
-for i in `find /etc/libvirt -name "*.conf" | xargs  ls`;do cp $i  ${i}.`date +"%Y%m%d_%H%M%S"`;done
-#https://libvirt.org/sources/libvirt-6.2.0.tar.xz
-#https://libvirt.org/compiling.html#compiling  #Future installation
-LibvirtVersion=libvirt-6.6.0
-cd ~
-if wget -4 -q -t 5 http://file.asuhu.com/kvm/${LibvirtVersion}.tar.xz;then
-echo "download libvirt success"
+	for i in `find /etc/libvirt -name "*.conf" | xargs  ls`;do cp $i  ${i}.`date +"%Y%m%d_%H%M%S"`;done
+	#https://libvirt.org/sources/libvirt-6.2.0.tar.xz
+	#https://libvirt.org/compiling.html#compiling  #Future installation
+	LibvirtVersion=libvirt-6.6.0
+	cd ~
+		if wget -4 -q -t 5 http://file.asuhu.com/kvm/${LibvirtVersion}.tar.xz;then
+			echo "download libvirt success"
+			else
+			wget https://libvirt.org/sources/${LibvirtVersion}.tar.xz
+		fi
+	yum -y install libxml2-devel gnutls-devel device-mapper-devel python-devel libnl-devel
+	yum -y install libpciaccess libpciaccess-devel cmake
+	yum -y install libxslt yajl-devel yajl
+	yum -y install netcf netcf-devel libnl3-devel
+	yum -y install python-docutils           #configure: error: "rst2html5/rst2html is required to build libvirt
+	yum -y install libtirpc-devel
+	tar -xf ${LibvirtVersion}.tar.xz && rm -rf ${LibvirtVersion}.tar.xz
+	cd ${LibvirtVersion}
+	mkdir build && cd build
+	../configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc --libdir=/usr/lib64 --with-netcf
+	sudo make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && sudo make install
+	#Exit if Libvirt is not installed successfully
+		if [ $? -ne 0 ];then
+			echo -e "\033[31m ${LibvirtVersion} Install error ... \033[0m \n"
+		kill -9 $$
+		fi
+	#./autogen.sh --system  #保持对操作系统发型版中安装可执行程序和共享库的目录的一致性
+	#
+	systemctl daemon-reload
+	service libvirtd restart
 else
-wget https://libvirt.org/sources/${LibvirtVersion}.tar.xz
-fi
-yum -y install libxml2-devel gnutls-devel device-mapper-devel python-devel libnl-devel
-yum -y install libpciaccess libpciaccess-devel cmake
-yum -y install libxslt yajl-devel yajl
-yum -y install netcf netcf-devel libnl3-devel
-yum -y install python-docutils           #configure: error: "rst2html5/rst2html is required to build libvirt
-yum -y install libtirpc-devel
-tar -xf ${LibvirtVersion}.tar.xz && rm -rf ${LibvirtVersion}.tar.xz
-cd ${LibvirtVersion}
-mkdir build && cd build
-../configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc --libdir=/usr/lib64 --with-netcf
-sudo make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && sudo make install
-#Exit if Libvirt is not installed successfully
-if [ $? -ne 0 ];then
-echo -e "\033[31m ${LibvirtVersion} Install error ... \033[0m \n"
-kill -9 $$
-fi
-#./autogen.sh --system  #保持对操作系统发型版中安装可执行程序和共享库的目录的一致性
-#
-systemctl daemon-reload
-service libvirtd restart
-else
-  echo "not upgrade libvirt"
+	echo "not upgrade libvirt"
 fi
 sleep 1
 virsh version
