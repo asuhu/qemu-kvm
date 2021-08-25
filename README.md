@@ -1,8 +1,6 @@
-# qemu-kvm
-
-<h2>KVM environment, support for Ceph rbd block storage, support for upgrading Qemu, support for upgrading libvirt, support for upgrading nested<br /> </h2>
+<h2>KVM environment, support Ceph rbd block storage, upgrading Qemu,  upgrading libvirt, config nested<br /> </h2>
  <ol>
-<li>需要服务器支持虚拟化技术Virtualization Technological</li>
+<li>需要服务器支持虚拟化技术 Virtualization Technological</li>
 <li>支持选择是否升级Qemu</li>
 <li>支持选择是否升级libvirt</li>
 <li>支持选择是否启用虚拟化嵌套nested</li>
@@ -41,6 +39,7 @@
   <h2>彻底摧毁虚拟机</h2>
  <ol>
 <li>bash -x delete.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(delete.sh name)</li>
+    例子 bash -x delete VM16<br />
 </ol>
     <h2>升级后的版本</h2>
  <img src="https://raw.githubusercontent.com/asuhu/qemu-kvm/master/kvm.png"  alt="virsh version" />
