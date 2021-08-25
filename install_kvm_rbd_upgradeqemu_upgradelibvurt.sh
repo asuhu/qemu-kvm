@@ -2,9 +2,10 @@
 #dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
 ############################
 #Email  860116511@qq.com
+#date 20210825
 #1 yum install qemu-kvm libvirt
-#2 Source code compilation upgrade qemu
-#3 Source code compilation upgrade libvirt
+#2 Source code compilation upgrade qemu5.2.0 , CentOS 7 is no longer a supported build platform qemu 6.1
+#3 Source code compilation upgrade libvirt6.2.0
 #4 config KVM nested
 ############################
 #yum install centos-release-qemu-ev
@@ -13,23 +14,44 @@
 if  [ -z "$(grep ' 7\.' /etc/redhat-release)" ] ;then
 echo "This script need CentOS 7"
 fi
-
+#dns
 if  ! cat /etc/resolv.conf|grep nameserver ;then
-	cat > /etc/resolv.conf << EOF
-	nameserver 8.8.8.8
-	nameserver 114.114.114.114
-	EOF
+cat > /etc/resolv.conf << EOF
+nameserver 8.8.8.8
+nameserver 114.114.114.114
+EOF
 fi
-
+#hostname
 wip=$(curl -s --connect-timeout 25 ipinfo.io | head -n 2|grep ip | awk -F '"' '{print $4}')
 if [ -z ${wip} ];then
-	wip=kvm.local
+wip=kvm.local
 fi
-
+hostnamectl set-hostname ${wip}
 #kernel
 grubby --update-kernel=ALL --remove-args="rhgb"
-
+#
+sed -i 's@^#UseDNS yes@UseDNS no@' /etc/ssh/sshd_config
+sed -i 's@^GSSAPIAuthentication yes@GSSAPIAuthentication no@' /etc/ssh/sshd_config
+setenforce 0
+sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
+#
+yum -y remove mariadb mysql
+yum -y install epel-release
 if [ ! -e '/usr/bin/wget' ]; then yum -y install wget ;fi
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://qnvideo.henan100.net/Centos-7.repo
+sed -e 's!^metalink=!#metalink=!g' \
+    -e 's!^#baseurl=!baseurl=!g' \
+    -e 's!//download\.fedoraproject\.org/pub!//mirrors.tuna.tsinghua.edu.cn!g' \
+    -e 's!http://mirrors\.tuna!https://mirrors.tuna!g' \
+    -i /etc/yum.repos.d/epel.repo /etc/yum.repos.d/epel-testing.repo
+yum -y install rsync wget gcc screen net-tools dnf unzip vim htop
+#ntpdate
+yum -y install ntpdate
+if [ -e "$(which ntpdate)" ]; then
+  ntpdate -u pool.ntp.org
+  [ ! -e "/var/spool/cron/root" -o -z "$(grep 'ntpdate' /var/spool/cron/root)" ] && { echo "*/20 * * * * $(which ntpdate) -u pool.ntp.org > /dev/null 2>&1" >> /var/spool/cron/root;chmod 600 /var/spool/cron/root; }
+fi
+#
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git
 yum clean all && yum makecache && yum repolist
 yum check-update && yum -y update
@@ -46,7 +68,7 @@ yum check-update && yum -y update
 #
 spkvm=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
 if [ $spkvm -le 0 ];then
-	echo "No support Virtualization Technological, check please."
+echo "No support Virtualization Technological, check please."
 kill -9 $$
 fi
 #
@@ -58,7 +80,6 @@ systemctl restart sshd
 sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 setenforce 0
 #
-hostnamectl set-hostname ${wip}
 systemctl disable postfix && systemctl stop postfix
 systemctl stop firewalld && systemctl disable firewalld
 systemctl stop NetworkManager && systemctl disable NetworkManager
@@ -195,13 +216,13 @@ echo -e "\033[31m Upgrade qemu and support ceph storage ... \033[0m \n"
 sleep 1
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-4.2.1
+qemuversion=qemu-5.2.0
 cd ~
-if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
-	echo "download qemu success"
-	else
-wget -4 -q https://download.qemu.org/${qemuversion}.tar.xz
-fi
+	if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
+		echo "download qemu success"
+		else
+	wget -4 -q https://download.qemu.org/${qemuversion}.tar.xz
+	fi
 #
 yum -y install libseccomp libseccomp-devel
 yum -y install libaio-devel                   #“Ï≤ΩIO
@@ -209,12 +230,14 @@ yum -y install bzip2-devel                   #--enable-bzip2
 yum -y install snappy-devel                #snappy support 
 yum -y install libcurl-devel 
 yum -y install gtk3-devel                    #--enable-gtk
+yum -y install  nettle-devel  libxml2-devel
+yum  -y install ninja-build
 yum -y install spice-server spice-protocol spice-server-devel  #Install sparse binary  --enable-sparse   #Sparse is a semantic checker for C programs; it can be used to find a number of potential problems with kernel code
 tar -xf ${qemuversion}.tar.xz && rm -rf ${qemuversion}.tar.xz
 cd ~/${qemuversion}
  ./configure --prefix=/usr --libdir=/usr/lib64 --sysconfdir=/etc --localstatedir=/var --libexecdir=/usr/libexec \
 --enable-rbd --enable-seccomp --enable-linux-aio --enable-bzip2 --enable-tools  --enable-curl  --enable-snappy \
---enable-gtk --enable-spice
+--enable-gtk --enable-spice  --enable-libxml2
 #
 make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && make install
 
