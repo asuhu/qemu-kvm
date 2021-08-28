@@ -2,17 +2,23 @@
 #dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
 ############################
 #Email  860116511@qq.com
-#date 20210825
+#Date 20210828
 #1 yum install qemu-kvm libvirt
-#2 Source code compilation upgrade qemu5.2.0 , CentOS 7 is no longer a supported build platform qemu 6.1
+#2 Source code compilation upgrade qemu5.1.0 , CentOS 7 is no longer a supported build platform qemu 6.1
 #3 Source code compilation upgrade libvirt6.2.0
-#4 config KVM nested
+#4 configure KVM nested
+#5 configure UEFI
+#6 configure KVM_PCI_Passthrough
 ############################
 #yum install centos-release-qemu-ev
 #Running hypervisor: QEMU 2.12.1
 ############################
+#31m red
+#32m blue
+############################
 if  [ -z "$(grep ' 7\.' /etc/redhat-release)" ] ;then
-echo "This script need CentOS 7"
+	kill -9 $$
+	echo -e "\033[32m "This script need CentOS 7" \033[0m \n"
 fi
 #dns
 if  ! cat /etc/resolv.conf|grep nameserver ;then
@@ -38,7 +44,7 @@ sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 yum -y remove mariadb mysql
 yum -y install epel-release
 if [ ! -e '/usr/bin/wget' ]; then yum -y install wget ;fi
-wget -O /etc/yum.repos.d/CentOS-Base.repo http://qnvideo.henan100.net/Centos-7.repo
+wget -4 -O /etc/yum.repos.d/CentOS-Base.repo http://qnvideo.henan100.net/Centos-7.repo
 sed -e 's!^metalink=!#metalink=!g' \
     -e 's!^#baseurl=!baseurl=!g' \
     -e 's!//download\.fedoraproject\.org/pub!//mirrors.tuna.tsinghua.edu.cn!g' \
@@ -51,6 +57,12 @@ if [ -e "$(which ntpdate)" ]; then
   ntpdate -u pool.ntp.org
   [ ! -e "/var/spool/cron/root" -o -z "$(grep 'ntpdate' /var/spool/cron/root)" ] && { echo "*/20 * * * * $(which ntpdate) -u pool.ntp.org > /dev/null 2>&1" >> /var/spool/cron/root;chmod 600 /var/spool/cron/root; }
 fi
+yum -y install ntp
+timedatectl set-timezone Asia/Shanghai
+ntpdate -s us.ntp.org.cn
+sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.conf
+systemctl enable ntpd.service && systemctl start ntpd.service
+hwclock -w
 #
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git
 yum clean all && yum makecache && yum repolist
@@ -68,7 +80,7 @@ yum check-update && yum -y update
 #
 spkvm=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
 if [ $spkvm -le 0 ];then
-echo "No support Virtualization Technological, check please."
+	echo -e "\033[32m "No support Virtualization Technological, check please." \033[0m \n"
 kill -9 $$
 fi
 #
@@ -91,13 +103,6 @@ echo 1 > /proc/sys/kernel/numa_balancing
 echo 0 > /sys/kernel/mm/ksm/merge_across_nodes
 echo 1 > /sys/kernel/mm/ksm/run
 #
-yum -y install ntp
-timedatectl set-timezone Asia/Shanghai
-ntpdate -s us.ntp.org.cn
-sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.conf
-systemctl enable ntpd.service && systemctl start ntpd.service
-hwclock -w
-#
 #yum -y install virt-manager virt-manager-common  #图形管理工具
 yum -y install lsof unzip
 yum -y install qemu-kvm qemu-kvm-tools qemu-kvm-common virt-who virt-viewer virt-v2v virt-top virt-install virt-dib  #This step will install rpcbind
@@ -110,6 +115,7 @@ libvirt-daemon-driver-storage-rbd libvirt-daemon-driver-storage-scsi libvirt-dae
 libvirt-dbus libvirt-devel libvirt-docs libvirt-libs libvirt-lock-sanlock libvirt-login-shell libvirt-nss libvirt-python libvirt-snmp
 systemctl enable libvirtd && systemctl restart libvirtd
 #
+#libguestfs is a set of tools for accessing and modifying virtual machine (VM) disk images
 yum install libguestfs-tools -y
 #
 #Danger needs to be disabled rpcbind 
@@ -125,7 +131,7 @@ mkdir -p /data/{iso,image,instance}
 yum -y install  MySQL-python  wget bc lrzsz iftop xmlstarlet csh gcc gcc-c++ vim wget dos2unix
 echo "alias vi='vim'"    >> /etc/profile
 #
-echo -e "\033[31m "KVM environment install done" \033[0m \n"
+echo -e "\033[32m "KVM environment installation is complete" \033[0m \n"
 sleep 2
 ####################################################################
 read -p "Will you upgrade qemu (y or n): " upgrade_qemu
@@ -135,7 +141,7 @@ if [ ${upgrade_qemu} = "y" ] ;then
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git deltarpm
 yum -y install flex bison    #make[1]: flex: Command not foundmake[1]: bison: Command not found
 
-echo -e "\033[31m "will yum install ceph-devel Nautilus" \033[0m \n"
+echo -e "\033[32m "will yum install ceph-devel v14 Nautilus" \033[0m \n"
 sleep 5
 if ping -c 10 216.58.200.4 >/dev/null;then
 cat > /etc/yum.repos.d/ceph.repo << "EOF"
@@ -143,7 +149,7 @@ cat > /etc/yum.repos.d/ceph.repo << "EOF"
 name=Ceph packages for $basearch
 baseurl=http://download.ceph.com/rpm-nautilus/el7/$basearch
 enabled=1
-gpgcheck=1
+gpgcheck=0
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 
@@ -151,7 +157,7 @@ gpgkey=https://download.ceph.com/keys/release.asc
 name=Ceph noarch packages
 baseurl=http://download.ceph.com/rpm-nautilus/el7/noarch
 enabled=1
-gpgcheck=1
+gpgcheck=0
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 
@@ -159,7 +165,7 @@ gpgkey=https://download.ceph.com/keys/release.asc
 name=Ceph source packages
 baseurl=http://download.ceph.com/rpm-nautilus/el7/SRPMS
 enabled=1
-gpgcheck=1
+gpgcheck=0
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 EOF
@@ -169,7 +175,7 @@ cat > /etc/yum.repos.d/ceph.repo << "EOF"
 name=Ceph packages for $basearch
 baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/$basearch
 enabled=1
-gpgcheck=1
+gpgcheck=0
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 
@@ -177,7 +183,7 @@ gpgkey=https://download.ceph.com/keys/release.asc
 name=Ceph noarch packages
 baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/noarch
 enabled=1
-gpgcheck=1
+gpgcheck=0
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 
@@ -185,7 +191,7 @@ gpgkey=https://download.ceph.com/keys/release.asc
 name=Ceph source packages
 baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/SRPMS
 enabled=1
-gpgcheck=1
+gpgcheck=0
 type=rpm-md
 gpgkey=https://download.ceph.com/keys/release.asc
 EOF
@@ -212,11 +218,11 @@ yum install -y python36 python36-setuptools python36-devel
 #warning: Python 3 will be required for building future versions of QEMU 4.2.0
 
 #Upgrade qemu and support ceph storage
-echo -e "\033[31m Upgrade qemu and support ceph storage ... \033[0m \n"
+echo -e "\033[32m Upgrade qemu and support ceph storage ... \033[0m \n"
 sleep 1
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-5.2.0
+qemuversion=qemu-5.1.0
 cd ~
 	if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
 		echo "download qemu success"
@@ -255,7 +261,7 @@ sleep 2
 virsh version
 qemu-img --help | grep rbd
  else
-echo "Not upgraded qemu"
+	echo -e "\033[31m "No upgraded qemu" \033[0m \n"
 fi
 ######################libvirt##########################
 read -p "Will you upgrade libvirt (y or n): " upgrade_libvirt
@@ -285,15 +291,15 @@ if [[ ${upgrade_libvirt} = "y" || ${upgrade_libvirt} = "Y" ]] ;then
 	sudo make -j`cat /proc/cpuinfo | grep "model name" | wc -l` && sudo make install
 	#Exit if Libvirt is not installed successfully
 		if [ $? -ne 0 ];then
-			echo -e "\033[31m ${LibvirtVersion} Install error ... \033[0m \n"
+			echo -e "\033[31m ${LibvirtVersion} Install Error ... \033[0m \n"
 		kill -9 $$
 		fi
 	#./autogen.sh --system  #保持对操作系统发型版中安装可执行程序和共享库的目录的一致性
 	#
-	systemctl daemon-reload
+	systemctl daemon-reload && systemctl enable libvirtd
 	service libvirtd restart
 else
-	echo "not upgrade libvirt"
+	echo -e "\033[31m "No upgrade libvirt" \033[0m \n"
 fi
 sleep 1
 virsh version
@@ -304,14 +310,14 @@ if [[ ${upgrade_nested} = "y" || ${upgrade_nested} = "Y" ]] ;then
 #
 	kvm_nested=`lscpu |grep "Model name"|grep Intel|awk '{for (i=3;i<NF;i++){printf $i"  "} print $NF}'`
 		 if [ -z "${kvm_nested}" ];then
-			echo AMD
+		echo -e "\033[32m "Configure AMD nested" \033[0m \n"
 				if [ `cat /sys/module/kvm_amd/parameters/nested` == 0 ];then
 						sudo sh -c "echo 'options kvm-amd nested=1' >> /etc/modprobe.d/dist.conf"
 						else
 						echo "Already configured nested"
 				fi
 	            else
-			echo Intel
+		echo -e "\033[32m "Configure Intel nested" \033[0m \n"
 				if [ `cat /sys/module/kvm_intel/parameters/nested` == N ];then
 						sudo sh -c "echo 'options kvm-intel nested=y' >> /etc/modprobe.d/dist.conf"
 						else
@@ -319,7 +325,56 @@ if [[ ${upgrade_nested} = "y" || ${upgrade_nested} = "Y" ]] ;then
 				fi
 		fi
 else
-  echo "not upgrade_nested"
+	echo -e "\033[31m "No upgrade_nested" \033[0m \n"
 fi
+sleep 1
+######################kvm_uefi##########################
+read -p "Will you config UEFI (y or n): " upgrade_uefi
+    [ -z "${upgrade_uefi}" ] && upgrade_uefi = n
+if [[ ${upgrade_uefi} = "y" || ${upgrade_uefi} = "Y" ]] ;then
+#
+		upgrade_uefi=`uname -r | grep x86_64`
+		 if [ -z "${upgrade_uefi}" ];then
+			echo -e "\033[32m "Configure ARM_64 UEFI" \033[0m \n"
+			rpm -ivh http://qnvideo.henan100.net/edk2.git-aarch64.noarch.rpm
+cat >> /etc/libvirt/qemu.conf <<'EOF'
+nvram = [
+"/usr/share/edk2.git/aarch64/QEMU_EFI-pflash.raw:/usr/share/edk2.git/aarch64/vars-template-pflash.raw"
+]
+EOF
+systemctl restart libvirtd
+#
+	            else
+			echo -e "\033[32m "Configure x86_64 UEFI" \033[0m \n"
+			rpm -ivh http://qnvideo.henan100.net/edk2.git-ovmf-x64.noarch.rpm
+cat >> /etc/libvirt/qemu.conf <<'EOF'
+nvram = [
+"/usr/share/edk2.git/ovmf-x64/OVMF_CODE-pure-efi.fd:/usr/share/edk2.git/ovmf-x64/OVMF_VARS-pure-efi.fd"
+]
+EOF
+systemctl restart libvirtd
+		fi
+else
+	echo -e "\033[31m "No upgrade_uefi" \033[0m \n"
+fi
+sleep 1
+######################KVM_PCI_Passthrough##########################
+read -p "Will you config KVM PCI Passthrough Kernel (y or n): " KVM_PCI_Passthrough
+    [ -z "${KVM_PCI_Passthrough}" ] && KVM_PCI_Passthrough= n
+if [[ ${KVM_PCI_Passthrough} = "y" || ${KVM_PCI_Passthrough} = "Y" ]] ;then
+#
+	grubby --update-kernel=ALL --args="intel_iommu=on" --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
+	echo -e "\033[32m "Display all kernel information of the system" \033[0m \n"
+	grubby --info=ALL
+	echo -e "\033[31m "Now KVM PCI Passthrough Kernel configuration is complete , You need config vfio to VM instance" \033[0m \n"
+#
+else
+	echo -e "\033[31m "No configuration KVM PCI Passthrough Kernel" \033[0m \n"
+fi
+#
+sleep 1
+virsh version
+	echo -e "\033[32m "You need config bridge , virsh iface-bridge eth0 br0" \033[0m \n"
+	echo -e "\033[32m "You need config switch lacp" \033[0m \n"
 #/etc/libvirt  libvirt.conf  libvirtd.conf  lxc.conf  qemu  qemu.conf #https://wiki.archlinux.org/index.php/Libvirt_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 #/var/lib/libvirt
