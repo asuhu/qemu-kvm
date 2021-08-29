@@ -347,12 +347,9 @@ systemctl restart libvirtd
 	            else
 			echo -e "\033[32m "Configure x86_64 UEFI" \033[0m \n"
 			rpm -ivh http://qnvideo.henan100.net/edk2.git-ovmf-x64.noarch.rpm
-cat >> /etc/libvirt/qemu.conf <<'EOF'
-nvram = [
-"/usr/share/edk2.git/ovmf-x64/OVMF_CODE-pure-efi.fd:/usr/share/edk2.git/ovmf-x64/OVMF_VARS-pure-efi.fd"
-]
-EOF
-systemctl restart libvirtd
+			 \cp -f /usr/share/edk2.git/ovmf-x64/OVMF_CODE-pure-efi.fd /usr/share/OVMF/OVMF_CODE.fd
+			 \cp -f /usr/share/edk2.git/ovmf-x64/OVMF_VARS-pure-efi.fd /usr/share/OVMF/OVMF_VARS.fd
+			systemctl restart libvirtd
 		fi
 else
 	echo -e "\033[31m "No upgrade_uefi" \033[0m \n"
@@ -363,10 +360,20 @@ read -p "Will you config KVM PCI Passthrough Kernel (y or n): " KVM_PCI_Passthro
     [ -z "${KVM_PCI_Passthrough}" ] && KVM_PCI_Passthrough= n
 if [[ ${KVM_PCI_Passthrough} = "y" || ${KVM_PCI_Passthrough} = "Y" ]] ;then
 #
-	grubby --update-kernel=ALL --args="intel_iommu=on" --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
-	echo -e "\033[32m "Display all kernel information of the system" \033[0m \n"
-	grubby --info=ALL
-	echo -e "\033[31m "Now KVM PCI Passthrough Kernel configuration is complete , You need config vfio to VM instance" \033[0m \n"
+	kvm_nested=`lscpu |grep "Model name"|grep Intel|awk '{for (i=3;i<NF;i++){printf $i"  "} print $NF}'`
+		 if [ -z "${kvm_nested}" ];then
+		echo -e "\033[32m "Configure AMD KVM_PCI_Passthrough" \033[0m \n"
+			grubby --update-kernel=ALL --args="amd_iommu=on" --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
+			echo -e "\033[32m "Display all kernel information of the system" \033[0m \n"
+			grubby --info=ALL
+			echo -e "\033[31m "Now AMD KVM PCI Passthrough Kernel configuration is complete , You need config vfio to VM instance" \033[0m \n"
+	            else
+		echo -e "\033[32m "Configure Intel KVM_PCI_Passthrough" \033[0m \n"
+			grubby --update-kernel=ALL --args="intel_iommu=on" --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
+			echo -e "\033[32m "Display all kernel information of the system" \033[0m \n"
+			grubby --info=ALL
+			echo -e "\033[31m "Now Intel KVM PCI Passthrough Kernel configuration is complete , You need config vfio to VM instance" \033[0m \n"
+		fi
 #
 else
 	echo -e "\033[31m "No configuration KVM PCI Passthrough Kernel" \033[0m \n"
