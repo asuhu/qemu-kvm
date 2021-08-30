@@ -19,6 +19,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 	--input tablet,bus=usb \
 	--features kvm_hidden=on \
 	--boot uefi,cdrom,hd,network,menu=on \
+	--machine q35 \
 	--serial file,path=/data/"VM${number}"console.log \
 	--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 	--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \
@@ -33,6 +34,7 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 	--input tablet,bus=usb \
 	--features kvm_hidden=on \
 	--boot uefi,cdrom,hd,network,menu=on \
+	--machine q35 \
 	--serial file,path=/data/"VM${number}"console.log \
 	--disk path=/data/image/"VM$number".qcow2,size="${Disksize}",bus=virtio,cache=writeback,sparse=true,format=qcow2 \
 	--graphics vnc,listen=0.0.0.0,port="${port}",keymap=en-us,password="${vncpass}" --noautoconsole \

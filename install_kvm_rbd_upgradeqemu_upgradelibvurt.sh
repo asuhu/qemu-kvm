@@ -4,7 +4,7 @@
 #Email  860116511@qq.com
 #Date 20210828
 #1 yum install qemu-kvm libvirt
-#2 Source code compilation upgrade qemu5.1.0 , CentOS 7 is no longer a supported build platform qemu 6.1
+#2 Source code compilation upgrade qemu4.2.1 , CentOS 7 is no longer a supported build platform qemu 6.1
 #3 Source code compilation upgrade libvirt6.2.0
 #4 configure KVM nested
 #5 configure UEFI
@@ -222,7 +222,7 @@ echo -e "\033[32m Upgrade qemu and support ceph storage ... \033[0m \n"
 sleep 1
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-5.1.0
+qemuversion=qemu-4.2.1
 cd ~
 	if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
 		echo "download qemu success"
