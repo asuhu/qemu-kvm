@@ -347,9 +347,7 @@ systemctl restart libvirtd
 	            else
 			echo -e "\033[32m "Configure x86_64 UEFI" \033[0m \n"
 			rpm -ivh http://qnvideo.henan100.net/edk2.git-ovmf-x64.noarch.rpm
-			 \cp -f /usr/share/edk2.git/ovmf-x64/OVMF_CODE-pure-efi.fd /usr/share/OVMF/OVMF_CODE.fd
-			 \cp -f /usr/share/edk2.git/ovmf-x64/OVMF_VARS-pure-efi.fd /usr/share/OVMF/OVMF_VARS.fd
-			systemctl restart libvirtd
+\cp -f /usr/share/qemu/firmware/81-ovmf-x64-git-pure-efi.json /usr/share/qemu/firmware/31-ovmf-x64-git-pure-efi.jsonsystemctl restart libvirtd
 		fi
 else
 	echo -e "\033[31m "No upgrade_uefi" \033[0m \n"
@@ -380,6 +378,16 @@ else
 fi
 #
 sleep 1
+#Configuration Optimization
+sed  -i 's@^#listen_tcp = 1@listen_tcp = 1@' /etc/libvirt/libvirtd.conf
+sed  -i 's@^#listen_tls = 0@listen_tls = 0@' /etc/libvirt/libvirtd.conf
+sed  -i 's@^#tcp_port = "16509"@tcp_port = "16509"@' /etc/libvirt/libvirtd.conf
+sed  -i 's@^#auth_tcp = "sasl"@auth_tcp = "none"@' /etc/libvirt/libvirtd.conf
+
+sed -i 's@^#user = "root"@user = "root"@' /etc/libvirt/qemu.conf 
+sed -i 's@^#group = "root"@group = "root"@' /etc/libvirt/qemu.conf
+sed -i 's@^#security_driver = "selinux"@security_driver = "none"@' /etc/libvirt/qemu.conf 
+#
 virsh version
 	echo -e "\033[32m "You need config bridge , virsh iface-bridge eth0 br0" \033[0m \n"
 	echo -e "\033[32m "You need config switch lacp" \033[0m \n"
