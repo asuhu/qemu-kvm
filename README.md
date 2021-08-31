@@ -4,6 +4,8 @@
 <li>支持选择是否升级Qemu</li>
 <li>支持选择是否升级libvirt</li>
 <li>支持选择是否启用虚拟化嵌套nested</li>
+<li>支持选择是否配置OVMF UEFI</li>
+<li>支持选择是否配置PCI直通PCI_Passthrough</li>
 <li>tuned-adm profile virtual-host   #Optimize for running KVM guests</li>
 <li>--video virtio   #支持高分辨率https://libvirt.org/formatdomain.html#elementsVideo</li>
 <li>--boot uefi,cdrom,hd,network,menu=on   #UEFI 启动（需要升级qemu-kvm，安装OVMF）</li>
