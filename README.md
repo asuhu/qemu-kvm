@@ -3,7 +3,7 @@
 <li>需要服务器支持虚拟化技术 Virtualization Technological</li>
 <li>支持选择是否升级Qemu</li>
 <li>支持选择是否升级libvirt</li>
-<li>支持选择是否启用虚拟化嵌套nested</li>
+<li>支持选择是否配置虚拟化嵌套nested</li>
 <li>支持选择是否配置OVMF UEFI</li>
 <li>支持选择是否配置PCI直通PCI_Passthrough</li>
 <li>tuned-adm profile virtual-host   #Optimize for running KVM guests</li>
