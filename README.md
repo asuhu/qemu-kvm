@@ -41,7 +41,7 @@
   <h2>彻底摧毁虚拟机</h2>
  <ol>
 <li>bash -x delete.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(delete.sh name)</li>
-    例子 bash -x win2k19cpu.sh 9 4096 1 2 2 200，创建名称为9、内存为4096M、1插槽2核心2线程共4核心CPU、200G磁盘的instance<br />
+      bash -x delete.sh VM6，彻底摧毁名字为VM6的instance<br />
 </ol>
     <h2>升级后的版本</h2>
  <img src="https://raw.githubusercontent.com/asuhu/qemu-kvm/master/kvm.png"  alt="virsh version" />
