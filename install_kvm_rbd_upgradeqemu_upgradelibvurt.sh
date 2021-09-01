@@ -347,7 +347,8 @@ systemctl restart libvirtd
 	            else
 			echo -e "\033[32m "Configure x86_64 UEFI" \033[0m \n"
 			rpm -ivh http://qnvideo.henan100.net/edk2.git-ovmf-x64.noarch.rpm
-\cp -f /usr/share/qemu/firmware/81-ovmf-x64-git-pure-efi.json /usr/share/qemu/firmware/31-ovmf-x64-git-pure-efi.jsonsystemctl restart libvirtd
+\cp -f /usr/share/qemu/firmware/81-ovmf-x64-git-pure-efi.json /usr/share/qemu/firmware/31-ovmf-x64-git-pure-efi.json
+systemctl restart libvirtd
 		fi
 else
 	echo -e "\033[31m "No upgrade_uefi" \033[0m \n"
