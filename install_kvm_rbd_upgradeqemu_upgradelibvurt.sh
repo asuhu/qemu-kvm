@@ -2,7 +2,7 @@
 #dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
 ############################
 #Email  860116511@qq.com
-#Date 20210828
+#Date 20210831
 #1 yum install qemu-kvm libvirt
 #2 Source code compilation upgrade qemu4.2.1 , CentOS 7 is no longer a supported build platform qemu 6.1
 #3 Source code compilation upgrade libvirt6.2.0
