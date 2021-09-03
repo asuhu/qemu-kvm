@@ -362,13 +362,15 @@ if [[ ${KVM_PCI_Passthrough} = "y" || ${KVM_PCI_Passthrough} = "Y" ]] ;then
 	kvm_nested=`lscpu |grep "Model name"|grep Intel|awk '{for (i=3;i<NF;i++){printf $i"  "} print $NF}'`
 		 if [ -z "${kvm_nested}" ];then
 		echo -e "\033[32m "Configure AMD KVM_PCI_Passthrough" \033[0m \n"
-			grubby --update-kernel=ALL --args="amd_iommu=on" --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
+grubby --update-kernel=ALL --args="amd_iommu=on amd_iommu=pt" 
+grubby --update-kernel=ALL --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
 			echo -e "\033[32m "Display all kernel information of the system" \033[0m \n"
 			grubby --info=ALL
 			echo -e "\033[31m "Now AMD KVM PCI Passthrough Kernel configuration is complete , You need config vfio to VM instance" \033[0m \n"
 	            else
 		echo -e "\033[32m "Configure Intel KVM_PCI_Passthrough" \033[0m \n"
-			grubby --update-kernel=ALL --args="intel_iommu=on" --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
+grubby --update-kernel=ALL --args="intel_iommu=on  intel_iommu=pt" 
+grubby --update-kernel=ALL --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
 			echo -e "\033[32m "Display all kernel information of the system" \033[0m \n"
 			grubby --info=ALL
 			echo -e "\033[31m "Now Intel KVM PCI Passthrough Kernel configuration is complete , You need config vfio to VM instance" \033[0m \n"
