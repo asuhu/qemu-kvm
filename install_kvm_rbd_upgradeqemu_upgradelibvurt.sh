@@ -389,7 +389,8 @@ sed  -i 's@^#auth_tcp = "sasl"@auth_tcp = "none"@' /etc/libvirt/libvirtd.conf
 
 sed -i 's@^#user = "root"@user = "root"@' /etc/libvirt/qemu.conf 
 sed -i 's@^#group = "root"@group = "root"@' /etc/libvirt/qemu.conf
-sed -i 's@^#security_driver = "selinux"@security_driver = "none"@' /etc/libvirt/qemu.conf 
+sed -i 's@^#security_driver = "selinux"@security_driver = "none"@' /etc/libvirt/qemu.conf
+systemctl restart libvirtd
 #
 virsh version
 	echo -e "\033[32m "You need config bridge , virsh iface-bridge eth0 br0" \033[0m \n"
