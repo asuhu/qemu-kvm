@@ -1,7 +1,7 @@
-<h2>KVM environment , support Ceph rbd block storage , upgrading Qemu , upgrading libvirt , configure nested , configure OVMF UEFI , configure PCI_Passthrough<br /> </h2>
+<h2>KVM environment , upgrading Qemu(support Ceph rbd block storage) , upgrading libvirt , configure nested , configure OVMF UEFI , configure PCI_Passthrough<br /> </h2>
  <ol>
 <li>需要服务器支持虚拟化技术 Virtualization Technological</li>
-<li>支持选择是否升级Qemu</li>
+<li>支持选择是否升级Qemu(support Ceph rbd block storage)</li>
 <li>支持选择是否升级libvirt</li>
 <li>支持选择是否配置虚拟化嵌套nested</li>
 <li>支持选择是否配置OVMF UEFI</li>
