@@ -387,8 +387,8 @@ sed  -i 's@^#listen_tls = 0@listen_tls = 0@' /etc/libvirt/libvirtd.conf
 sed  -i 's@^#tcp_port = "16509"@tcp_port = "16509"@' /etc/libvirt/libvirtd.conf
 sed  -i 's@^#auth_tcp = "sasl"@auth_tcp = "none"@' /etc/libvirt/libvirtd.conf
 
-sed -i 's@^#user = "root"@user = "root"@' /etc/libvirt/qemu.conf 
-sed -i 's@^#group = "root"@group = "root"@' /etc/libvirt/qemu.conf
+sed -i 's@^#user = "root"@user = "qemu"@' /etc/libvirt/qemu.conf 
+sed -i 's@^#group = "root"@group = "qemu"@' /etc/libvirt/qemu.conf
 sed -i 's@^#security_driver = "selinux"@security_driver = "none"@' /etc/libvirt/qemu.conf
 systemctl restart libvirtd
 #
