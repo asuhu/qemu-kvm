@@ -359,8 +359,8 @@ read -p "Will you config KVM PCI Passthrough Kernel (y or n): " KVM_PCI_Passthro
     [ -z "${KVM_PCI_Passthrough}" ] && KVM_PCI_Passthrough= n
 if [[ ${KVM_PCI_Passthrough} = "y" || ${KVM_PCI_Passthrough} = "Y" ]] ;then
 #
-	kvm_nested=`lscpu |grep "Model name"|grep Intel|awk '{for (i=3;i<NF;i++){printf $i"  "} print $NF}'`
-		 if [ -z "${kvm_nested}" ];then
+	PCI_Passthrough=`lscpu |grep "Model name"|grep Intel|awk '{for (i=3;i<NF;i++){printf $i"  "} print $NF}'`
+		 if [ -z "${PCI_Passthrough}" ];then
 		echo -e "\033[32m "Configure AMD KVM_PCI_Passthrough" \033[0m \n"
 grubby --update-kernel=ALL --args="amd_iommu=on amd_iommu=pt" 
 grubby --update-kernel=ALL --args=" modprobe.blacklist=snd_hda_intel,amd76x_edac,vga16fb,nouveau,rivafb,nvidiafb,rivatv,amdgpu,radeon"
