@@ -1,4 +1,15 @@
-<h2>KVM environment , upgrading Qemu(support Ceph rbd block storage) , upgrading libvirt , configure nested , configure OVMF UEFI , configure PCI_Passthrough<br /> </h2>
+<h2>Introduction 简介</h2>
+ <ol>
+<li>KVM environment</li>
+<li>upgrading Qemu(support Ceph rbd block storage) </li>
+<li>upgrading libvirt</li>
+<li>configure nested</li>
+<li>configure OVMF UEFI</li>
+<li>configure PCI_Passthrough</li>
+
+</ol>
+ <hr />
+<h2>Installation Instructions 安装须知</h2>
  <ol>
 <li>需要服务器支持虚拟化技术 Virtualization Technological</li>
 <li>支持选择是否升级Qemu(support Ceph rbd block storage)</li>
@@ -14,8 +25,10 @@
 <li>--vcpus sockets=${SocketNU},cores=${CoreNU},threads=${ThreadNU}  #vCPU = sockets * cores * threads</li>
 </ol>
  <hr />
- 
- <h2>创建虚拟机<br /></h2>
+  <h2>Install 安装<br /></h2>
+  bash install_kvm_rbd_upgradeqemu_upgradelibvurt.sh 2>&1 | tee kvm.log
+ <hr />
+ <h2>Create instance 创建虚拟机<br /></h2>
      <ol>
 <li>创建CentOS6</li>
     bash -x centos6.sh $1&nbsp;$2&nbsp;$3&nbsp;$4&nbsp;&nbsp;&nbsp;&nbsp;(name Memory CpuCont  DiskSize)<br />
@@ -37,11 +50,11 @@
     例子 bash -x win2k19cpu.sh 9 4096 1 2 2 200，创建名称为9、内存为4096M、1插槽2核心2线程共4核心CPU、200G磁盘的instance<br />
     </ol>
  <hr />
-
-  <h2>彻底摧毁虚拟机</h2>
+  <h2>Undefine instance 彻底摧毁虚拟机</h2>
  <ol>
 <li>bash -x delete.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(delete.sh name)</li>
       bash -x delete.sh VM6，彻底摧毁名字为VM6的instance<br />
 </ol>
-    <h2>升级后的版本</h2>
+ <hr />
+    <h2>Screenshot 截图</h2>
  <img src="https://raw.githubusercontent.com/asuhu/qemu-kvm/master/kvm.png"  alt="virsh version" />
