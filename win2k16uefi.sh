@@ -46,5 +46,5 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 	--debug --force --autostart
 fi
 #
-echo "Instance Name VM${number}" , VNC port ${port} , VNC password ${vncpass}
-echo "${createtime}" ,  "Instance Name VM${number}" , VNC port ${port} , VNC password ${vncpass} >>/root/instance.log
+echo "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass}
+echo "${createtime}" "-" "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass} >>/root/instance.log

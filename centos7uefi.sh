@@ -3,11 +3,10 @@
 #$2数字，代表内存，大小是M
 #$3数字，代表cpu的核心数
 #$4数字，代表磁盘大小
-vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
-
-
+#osinfo-query os
+#bash centos7uefi.sh 10 16384 8 1000
 if [ ! -e /data/iso/centos7.iso ];then
-wget -O /data/iso/centos7.iso https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso
+	wget -O /data/iso/centos7.iso https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso
 fi
 if [ $? -gt 0 ];then
 	wget -O /data/iso/centos7.iso  http://arv.asuhu.com/ftp/isos/CentOS-7-x86_64-Minimal-1908.iso
@@ -18,6 +17,8 @@ port=$[5900+$number]
 mem=$2
 cont=$3
 Disksize=$4
+createtime=`date "+Instance Create Time %Y-%m-%d %H:%M.%S"`
+vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
 
 #bridging
 if brctl show | grep -v vir | grep br0;then
@@ -50,5 +51,6 @@ else
 	--clock offset=utc \
 	--debug --force --autostart
 fi
-#osinfo-query os
-echo "VM$number" , vnc port ${port} , vnc password ${vncpass}
+#
+echo "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass}
+echo "${createtime}" "-" "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass} >>/root/instance.log

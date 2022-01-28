@@ -3,13 +3,15 @@
 #$2数字，代表内存，大小是M
 #$3数字，代表cpu的核心数
 #$4数字，代表磁盘大小
-vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
+#osinfo-query os
 
 number=$1
 port=$[5900+$number]
 mem=$2
 cont=$3
 Disksize=$4
+createtime=`date "+Instance Create Time %Y-%m-%d %H:%M.%S"`
+vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
 
 #bridging
 if brctl show | grep -v vir | grep br0;then
@@ -42,5 +44,5 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 	--clock offset=localtime,hypervclock_present=yes \
 	--debug --force --autostart
 fi
-#osinfo-query os
-echo "VM$number" , vnc port ${port} , vnc password ${vncpass}
+echo "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass}
+echo "${createtime}" "-" "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass} >>/root/instance.log
