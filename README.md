@@ -18,7 +18,7 @@
 <li>支持选择是否配置OVMF UEFI</li>
 <li>支持选择是否配置PCI直通PCI_Passthrough</li>
 <li>error: Operation not supported: internal snapshots of a VM with pflash based firmware are not supported
-在启用uefi和使用snapshot功能之间要自行权衡后选择使用，或者存储支持快照的特性（ceph）<li>
+在启用uefi和使用snapshot功能之间要自行权衡后选择使用，或者存储支持快照的特性（ceph）</li>
 <li>tuned-adm profile virtual-host   #Optimize for running KVM guests</li>
 <li>--video virtio   #支持高分辨率https://libvirt.org/formatdomain.html#elementsVideo</li>
 <li>--boot uefi,cdrom,hd,network,menu=on   #UEFI 启动（需要升级qemu-kvm，安装OVMF）</li>
