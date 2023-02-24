@@ -2,16 +2,14 @@
 #dos2unix install_kvm_rbd_upgradeqemu_upgradelibvurt.sh
 ############################
 #Email  860116511@qq.com
-#Date 20210831
+#Date 20230224
 #1 yum install qemu-kvm libvirt
-#2 Source code compilation upgrade qemu4.2.1 , CentOS 7 is no longer a supported build platform qemu 6.1
+#2 Source code compilation upgrade QEMU5.2 , CentOS 7 is no longer a supported build platform QEMU 6
 #3 Source code compilation upgrade libvirt6.2.0
-#4 configure KVM nested
-#5 configure UEFI
-#6 configure KVM_PCI_Passthrough
+#4 configure KVM nested \ configure UEFI \ configure KVM_PCI_Passthrough
+#5 systemctl mask rpcbind \ systemctl mask firewalld
 ############################
-#yum install centos-release-qemu-ev
-#Running hypervisor: QEMU 2.12.1
+#yum install centos-release-qemu-ev Running hypervisor: QEMU 2.12.1
 ############################
 #31m red
 #32m blue
@@ -23,12 +21,12 @@ fi
 #dns
 if  ! cat /etc/resolv.conf|grep nameserver ;then
 cat > /etc/resolv.conf << EOF
-nameserver 8.8.8.8
 nameserver 114.114.114.114
+nameserver 223.5.5.5
 EOF
 fi
-#hostname
-wip=$(curl -s --connect-timeout 25 ipinfo.io | head -n 2|grep ip | awk -F '"' '{print $4}')
+#set hostname
+wip=$(curl -s --connect-timeout 25 ipinfo.io | head -n 2|grep ip | awk -F '"' '{print $4}'|  sed 's/\./-/g')
 if [ -z ${wip} ];then
 wip=kvm.local
 fi
@@ -43,26 +41,29 @@ sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 #
 yum -y remove mariadb mysql
 yum -y install epel-release
-if [ ! -e '/usr/bin/wget' ]; then yum -y install wget ;fi
-wget -4 -O /etc/yum.repos.d/CentOS-Base.repo http://qnvideo.henan100.net/Centos-7.repo
 sed -e 's!^metalink=!#metalink=!g' \
     -e 's!^#baseurl=!baseurl=!g' \
     -e 's!//download\.fedoraproject\.org/pub!//mirrors.tuna.tsinghua.edu.cn!g' \
     -e 's!http://mirrors\.tuna!https://mirrors.tuna!g' \
     -i /etc/yum.repos.d/epel.repo /etc/yum.repos.d/epel-testing.repo
-yum -y install rsync wget gcc screen net-tools dnf unzip vim htop
-#ntpdate
+if ! which wget;then yum -y install wget;fi
+wget -4 --no-check-certificate -O /etc/yum.repos.d/CentOS-Base.repo https://www.zhangfangzhou.cn/third/Centos-7.repo
+if [ $? -gt 0 ];then kill -9 $$;fi
+yum -y install rsync wget gcc screen net-tools dnf unzip vim htop iftop htop tcping tcpdump sysstat bash-completion perl
+yum -y install pciutils bridge-utils
 yum -y install ntpdate
 if [ -e "$(which ntpdate)" ]; then
-  ntpdate -u pool.ntp.org
-  [ ! -e "/var/spool/cron/root" -o -z "$(grep 'ntpdate' /var/spool/cron/root)" ] && { echo "*/20 * * * * $(which ntpdate) -u pool.ntp.org > /dev/null 2>&1" >> /var/spool/cron/root;chmod 600 /var/spool/cron/root; }
+  ntpdate -u ntp.aliyun.com
+  [ ! -e "/var/spool/cron/root" -o -z "$(grep 'ntpdate' /var/spool/cron/root)" ] && { echo "*/20 * * * * $(which ntpdate) -u ntp.aliyun.com > /dev/null 2>&1" >> /var/spool/cron/root;chmod 600 /var/spool/cron/root; }
 fi
-yum -y install ntp
 timedatectl set-timezone Asia/Shanghai
-ntpdate -s us.ntp.org.cn
-sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.conf
-systemctl enable ntpd.service && systemctl start ntpd.service
-hwclock -w
+#
+#NTP Server
+#yum -y install ntp
+#ntpdate -s us.ntp.org.cn
+#sed -i 's/server 0.centos.pool.ntp.org iburst/server us.ntp.org.cn/g' /etc/ntp.conf
+#systemctl enable ntpd.service && systemctl start ntpd.service
+#hwclock -w
 #
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git
 yum clean all && yum makecache && yum repolist
@@ -79,10 +80,10 @@ yum check-update && yum -y update
 #ovs-vsctl add-br br-wan
 #
 spkvm=$(egrep -c '(vmx|svm)' /proc/cpuinfo)
-if [ $spkvm -le 0 ];then
-	echo -e "\033[32m "No support Virtualization Technological, check please." \033[0m \n"
-kill -9 $$
-fi
+	if [ $spkvm -le 0 ];then
+		echo -e "\033[32m "No support Virtualization Technological, check please." \033[0m \n"
+		kill -9 $$
+	fi
 #
 #SSH
 sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
@@ -137,7 +138,7 @@ sleep 2
 read -p "Will you upgrade qemu (y or n): " upgrade_qemu
     [ -z "${upgrade_qemu}" ] && upgrade_qemu=n
 if [ ${upgrade_qemu} = "y" ] ;then
-##########CentOS7 Yum Install Ceph-devel Nautilus(ðÐðÄÂÝ)
+##########CentOS 7 Yum Install Ceph-devel Nautilus(ðÐðÄÂÝ)
 yum -y install wget gcc gcc-c++ make cmake vim screen epel-release net-tools git deltarpm
 yum -y install flex bison    #make[1]: flex: Command not foundmake[1]: bison: Command not found
 
@@ -222,9 +223,9 @@ echo -e "\033[32m Upgrade qemu and support ceph storage ... \033[0m \n"
 sleep 1
 yum -y install zlib-devel glib2-devel autoconf automake libtool
 yum -y install pixman pixman-devel              #ERROR: pixman >= 0.21.8 not present.Please install the pixman devel package.
-qemuversion=qemu-4.2.1
+qemuversion=qemu-5.2.0
 cd ~
-	if wget -4 -q -t 5 http://file.asuhu.com/kvm/${qemuversion}.tar.xz;then
+	if wget -4 -q -t 5 http://10.53.123.144/kvm/qemu-5.2.0.tar.xz;then
 		echo "download qemu success"
 		else
 	wget -4 -q https://download.qemu.org/${qemuversion}.tar.xz
@@ -237,7 +238,7 @@ yum -y install snappy-devel                #snappy support
 yum -y install libcurl-devel 
 yum -y install gtk3-devel                    #--enable-gtk
 yum -y install  nettle-devel  libxml2-devel
-yum  -y install ninja-build
+yum  -y install ninja-build                   #Ninja 1.7 or newer is now required to build QEMU
 yum -y install spice-server spice-protocol spice-server-devel  #Install sparse binary  --enable-sparse   #Sparse is a semantic checker for C programs; it can be used to find a number of potential problems with kernel code
 tar -xf ${qemuversion}.tar.xz && rm -rf ${qemuversion}.tar.xz
 cd ~/${qemuversion}
@@ -273,7 +274,7 @@ if [[ ${upgrade_libvirt} = "y" || ${upgrade_libvirt} = "Y" ]] ;then
 	#https://libvirt.org/compiling.html#compiling  #Future installation
 	LibvirtVersion=libvirt-6.6.0
 	cd ~
-		if wget -4 -q -t 5 http://file.asuhu.com/kvm/${LibvirtVersion}.tar.xz;then
+		if wget -4 -q -t 5 http://10.53.123.144/kvm/libvirt-6.6.0.tar.xz;then
 			echo "download libvirt success"
 			else
 			wget https://libvirt.org/sources/${LibvirtVersion}.tar.xz
@@ -336,7 +337,8 @@ if [[ ${upgrade_uefi} = "y" || ${upgrade_uefi} = "Y" ]] ;then
 		upgrade_uefi=`uname -r | grep x86_64`
 		 if [ -z "${upgrade_uefi}" ];then
 			echo -e "\033[32m "Configure ARM_64 UEFI" \033[0m \n"
-			rpm -ivh http://qnvideo.henan100.net/edk2.git-aarch64.noarch.rpm
+			wget -4 --no-check-certificate -O /tmp/edk2.git-aarch64-20220719.rpm https://www.zhangfangzhou.cn/third/rpm/edk2.git-aarch64-20220719.rpm
+			rpm -ivh /tmp/edk2.git-aarch64-20220719.rpm
 cat >> /etc/libvirt/qemu.conf <<'EOF'
 nvram = [
 "/usr/share/edk2.git/aarch64/QEMU_EFI-pflash.raw:/usr/share/edk2.git/aarch64/vars-template-pflash.raw"
@@ -346,7 +348,8 @@ systemctl restart libvirtd
 #
 	            else
 			echo -e "\033[32m "Configure x86_64 UEFI" \033[0m \n"
-			rpm -ivh http://qnvideo.henan100.net/edk2.git-ovmf-x64.noarch.rpm
+			wget -4 --no-check-certificate -O /tmp/edk2.git-ovmf-x64-20220719.rpm https://www.zhangfangzhou.cn/third/rpm/edk2.git-ovmf-x64-20220719.rpm
+			rpm -ivh /tmp/edk2.git-ovmf-x64-20220719.rpm
 \cp -f /usr/share/qemu/firmware/81-ovmf-x64-git-pure-efi.json /usr/share/qemu/firmware/31-ovmf-x64-git-pure-efi.json
 systemctl restart libvirtd
 		fi
@@ -388,7 +391,7 @@ sed  -i 's@^#tcp_port = "16509"@tcp_port = "16509"@' /etc/libvirt/libvirtd.conf
 sed  -i 's@^#auth_tcp = "sasl"@auth_tcp = "none"@' /etc/libvirt/libvirtd.conf
 sed  -i 's@^#log_outputs="3:syslog:libvirtd"@log_outputs="1:file:/var/log/libvirt/libvirtd.log"@'  /etc/libvirt/libvirtd.conf
 
-sed -i 's@^#user = "root"@user = "qemu"@' /etc/libvirt/qemu.conf 
+sed -i 's@^#user = "root"@user = "qemu"@' /etc/libvirt/qemu.conf       #solve Domain id=69 name='webserver-1-101' uuid=9001a3e0-dbf9-464b-ada4-a632411c3a84 is tainted: high-privileges
 sed -i 's@^#group = "root"@group = "qemu"@' /etc/libvirt/qemu.conf
 sed -i 's@^#security_driver = "selinux"@security_driver = "none"@' /etc/libvirt/qemu.conf
 systemctl restart libvirtd
