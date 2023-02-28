@@ -54,8 +54,16 @@
  <hr />
   <h2>Undefine instance 彻底摧毁虚拟机</h2>
  <ol>
-<li>bash -x delete.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(delete.sh name)</li>
+<li>bash -x delete.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(delete.sh instance name)</li>
       bash -x delete.sh VM6，彻底摧毁名字为VM6的instance<br />
+</ol>
+ <hr />
+   <h2>Detach Attach ISO 卸载和挂载ISO</h2>
+ <ol>
+ <li>bash -x detach_iso.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(detach_iso.sh instance name)</li>
+ <li>bash -x detach_iso.sh VM6，彻底卸载名字为VM6的instance的ISO镜像<br /></li>
+<li>bash -x attach_iso.sh&nbsp;$1&nbsp;$2&nbsp;&nbsp;&nbsp;&nbsp;(attach_iso instance name iso address)</li>
+      bash -x attach_iso.sh VM6 /nfs/iso/windows_server_2016_virtio.iso，临时挂载名字为VM6的instance的ISO镜像<br />
 </ol>
  <hr />
     <h2>Screenshot 截图</h2>
