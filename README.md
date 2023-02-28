@@ -49,7 +49,7 @@
     bash -x win2k19uefi.sh $1&nbsp;$2&nbsp;$3&nbsp;$4&nbsp;&nbsp;&nbsp;&nbsp;(name Memory CpuCont  DiskSize)<br />
     <li>创建Windows Server 2019 CPU</li>
     bash -x win2k19cpu.sh $1&nbsp;$2&nbsp;$3&nbsp;$4&nbsp;$5&nbsp;$6&nbsp;&nbsp;(name Memory sockets cores  threads DiskSize)<br />
-    例子 bash -x win2k19cpu.sh 9 4096 1 2 2 200，创建名称为9、内存为4096M、1插槽2核心2线程共4核心CPU、200G磁盘的instance<br />
+    例子 bash -x win2k19cpu.sh 9 4096 1 2 2 200，创建名称为9、内存为4096MB、1插槽(socket)2核心(cores)2线程共4核心CPU、200G磁盘的instance<br />
     </ol>
  <hr />
   <h2>Undefine instance 彻底摧毁虚拟机</h2>
@@ -61,7 +61,7 @@
    <h2>Detach Attach ISO 卸载和挂载ISO</h2>
  <ol>
  <li>bash -x detach_iso.sh&nbsp;$1&nbsp;&nbsp;&nbsp;&nbsp;(detach_iso.sh instance name)</li>
- <li>bash -x detach_iso.sh VM6，彻底卸载名字为VM6的instance的ISO镜像<br /></li>
+      bash -x detach_iso.sh VM6，彻底卸载名字为VM6的instance的ISO镜像<br />
 <li>bash -x attach_iso.sh&nbsp;$1&nbsp;$2&nbsp;&nbsp;&nbsp;&nbsp;(attach_iso instance name iso address)</li>
       bash -x attach_iso.sh VM6 /nfs/iso/windows_server_2016_virtio.iso，临时挂载名字为VM6的instance的ISO镜像<br />
 </ol>
