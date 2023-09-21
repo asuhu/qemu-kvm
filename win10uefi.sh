@@ -18,7 +18,7 @@ vncpass=$(date +%s%N | sha256sum | base64 | head -c 15)
 if brctl show | grep -v vir | grep br0;then
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
 	--network bridge=br0,model=virtio \
-	--cdrom /data/iso/Win10LTSC2021_KVM.iso \
+	--cdrom /data/iso/win10.iso \
 	--input tablet,bus=usb \
 	--features kvm_hidden=on \
 	--boot uefi,cdrom,hd,network,menu=on \
@@ -33,7 +33,7 @@ else
 #Network NAT
 virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --cpu=host-passthrough --accelerate --hvm \
 	--network network=default,model=virtio \
-	--cdrom /data/iso/Win10LTSC2021_KVM.iso \
+	--cdrom /data/iso/win10.iso \
 	--input tablet,bus=usb \
 	--features kvm_hidden=on \
 	--boot cdrom,hd,network,menu=on \
@@ -46,5 +46,9 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 	--debug --force --autostart
 fi
 #
+if [ $? -eq 0 ];then
 echo "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass}
 echo "${createtime}" "-" "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass} >>/root/instance.log
+  else
+echo "Error,Check It."
+fi

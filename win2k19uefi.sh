@@ -43,4 +43,9 @@ virt-install --virt-type kvm --name "VM$number" --ram="$mem" --vcpus="$cont" --c
 	--debug --force --autostart
 fi
 #osinfo-query os
-echo "VM$number" , vnc port ${port} , vnc password ${vncpass}
+if [ $? -eq 0 ];then
+echo "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass}
+echo "${createtime}" "-" "Instance Name VM${number}" "-" VNC Port ${port} "-" VNC Password ${vncpass} >>/root/instance.log
+  else
+echo "Error,Check It."
+fi

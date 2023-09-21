@@ -66,5 +66,8 @@
       bash -x attach_iso.sh VM6 /nfs/iso/windows_server_2016_virtio.iso，临时挂载名字为VM6的instance的ISO镜像<br />
 </ol>
  <hr />
+    <h2>Usage examples 使用样例</h2>
+    example.sh
+     <hr />
     <h2>Screenshot 截图</h2>
  <img src="https://raw.githubusercontent.com/asuhu/qemu-kvm/master/kvm.png"  alt="virsh version" />
