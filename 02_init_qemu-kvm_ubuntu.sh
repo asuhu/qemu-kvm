@@ -1,7 +1,6 @@
 #!/bin/bash
 # =========================================
-# KVM 安装和升级Ubuntu24.04
-# 目前编译新版的QEMU-KVM还有问题
+# Ubuntu、Debian安装和升级KVM
 # 作者：asuhu
 # =========================================
 
@@ -15,7 +14,7 @@ if [ -f /etc/os-release ]; then
     OS_ID=$ID
     echo "检测到系统: $PRETTY_NAME"
 else
-    echo "无法检测操作系统版本，请确认系统兼容 Ubuntu / RockyLinux"
+    echo "无法检测操作系统版本，请确认系统兼容 Ubuntu / Debian"
     exit 1
 fi
 
@@ -23,14 +22,11 @@ fi
 echo "[1/8] 更新系统包..."
 if [[ "$OS_ID" =~ (ubuntu|debian) ]]; then
     apt update -y
-elif [[ "$OS_ID" =~ (rocky|rhel) ]]; then
-    dnf makecache -y || yum makecache -y
 else
     echo "暂不支持此系统: $OS_ID"
     exit 1
 fi
 sleep 1
-
 
 echo "[2/8] 安装 KVM 及相关组件..."
 if [[ "$OS_ID" =~ (ubuntu|debian) ]]; then
@@ -43,16 +39,6 @@ if [[ "$OS_ID" =~ (ubuntu|debian) ]]; then
         libosinfo-bin ovmf libguestfs-tools
     # 启用 libvirt 服务
     sudo systemctl enable --now libvirtd || sudo systemctl enable --now libvirt-bin
-elif [[ "$OS_ID" =~ (rocky|rhel|centos) ]]; then
-    echo "[2/8] 安装 KVM 及相关组件..."  
-    # 安装虚拟化宿主机基础组件（替代 @virt）
-    sudo dnf -y groupinstall "Virtualization Host"
-    # 安装额外组件
-    sudo dnf install -y virt-install virt-manager virt-viewer virt-top virt-v2v \
-                        qemu-kvm qemu-img libvirt libvirt-daemon-kvm \
-                        libguestfs-tools edk2-ovmf
-    # 启用 libvirtd 服务
-    sudo systemctl enable --now libvirtd
 fi
 sleep 1
 
@@ -62,7 +48,7 @@ CONF_LIBVIRTD="/etc/libvirt/libvirtd.conf"
 # 备份配置文件
 cp -p "$CONF_LIBVIRTD" "${CONF_LIBVIRTD}.$(date +%F_%H%M%S).bak"
 echo "已备份 libvirtd.conf 到 ${CONF_LIBVIRTD}.$(date +%F_%H%M%S).bak"
-# 禁用 TLS、禁用 TCP（本地使用 Unix socket 即可）
+# 禁用 TLS、禁用 TCP（本地使用 Unix socket 即可）、关闭 libvirt TCP 监听功能。
 sed -i 's/^#\?\s*listen_tls\s*=.*/listen_tls = 0/' "$CONF_LIBVIRTD"
 sed -i 's/^#\?\s*tcp_port\s*=.*/tcp_port = ""/' "$CONF_LIBVIRTD"
 sed -i 's/^#\?\s*listen_tcp\s*=.*/listen_tcp = 0/' "$CONF_LIBVIRTD"
@@ -100,15 +86,6 @@ sed -i 's/^#\?\s*security_driver\s*=.*/security_driver = "none"/' "$CONF_QEMU"
 #sudo journalctl -xeu libvirtd
 #sudo cat /var/log/libvirt/libvirtd.log
 
-#禁用配置 libvirtd 服务，使其通过 TCP 监听远程连接。
-#LIBVIRTD_SERVICE="/etc/systemd/system/libvirtd.service.d/tcp.conf"
-#mkdir -p "$(dirname "$LIBVIRTD_SERVICE")"
-#cat > "$LIBVIRTD_SERVICE" <<EOF
-#[Service]
-#ExecStart=
-#ExecStart=/usr/sbin/libvirtd --listen
-#EOF
-
 systemctl daemon-reexec
 systemctl daemon-reload
 systemctl restart libvirtd
@@ -117,7 +94,6 @@ echo "[5/8] 启动并检查 libvirtd 服务..."
 systemctl enable --now libvirtd
 systemctl status libvirtd --no-pager
 sleep 1
-
 
 #######################################
 # QEMU 源码编译
@@ -130,18 +106,6 @@ if [[ "$OS_ID" =~ (ubuntu|debian) ]]; then
         exit 1
     else
         echo "qemu-system-x86_64 已安装"
-    fi
-
-elif [[ "$OS_ID" == "rocky" ]]; then
-    if [ -f /usr/libexec/qemu-kvm ]; then
-        echo "/usr/libexec/qemu-kvm 存在"
-        # 创建软链接到 /usr/bin
-        sudo ln -sf /usr/libexec/qemu-kvm /usr/bin/qemu-kvm
-        sudo ln -sf /usr/libexec/qemu-kvm /usr/bin/qemu-system-x86_64
-        echo "已创建软链接到 /usr/bin"
-    else
-        echo "/usr/libexec/qemu-kvm 不存在，请先安装 QEMU。"
-        exit 1
     fi
 fi
 
@@ -181,19 +145,6 @@ if [[ "$OS_ID" =~ (ubuntu|debian) ]]; then
       libepoxy-dev libpulse-dev libjack-jackd2-dev libasound2-dev \
       libdrm-dev libgbm-dev libudev-dev \
       librdmacm-dev libibumad-dev libdevmapper-dev checkinstall cmake
-
-elif [[ "$OS_ID" =~ (rocky) ]]; then
-    sudo dnf install -y epel-release
-    sudo dnf config-manager --set-enabled crb
-# 安装 QEMU 编译依赖，跳过无法安装或冲突的包
-sudo dnf install -y \
-    git gcc gcc-c++ make meson ninja-build python3-pip \
-    glib2-devel pixman-devel zlib-devel libaio-devel libusb-devel \
-    libcurl-devel libssh-devel libcap-ng-devel libnfs-devel \
-    librbd-devel librados-devel rdma-core-devel numactl-devel libiscsi-devel \
-    bzip2-devel snappy-devel libzstd-devel libdrm-devel \
-    gtk3-devel libusbx-devel libepoxy-devel alsa-lib-devel cmake \
-    --skip-broken
 fi
 
 echo "[2/8] 下载 QEMU 源码..."
@@ -230,17 +181,6 @@ fi
 echo "QEMU 下载完成：qemu-${QEMU_VERSION}.tar.xz"
 tar -Jxvf qemu-${QEMU_VERSION}.tar.xz 
 cd qemu-${QEMU_VERSION}
-
-sudo dnf install -y python3-pip  # 确保 pip 可用
-python3 -m pip install --user tomli
-
-cd /tmp
-git clone https://github.com/axboe/liburing.git
-cd liburing
-make
-sudo make install
-sudo ldconfig
-
 
 echo "[3/8] 配置构建目录..."
 mkdir -p "$BUILD_DIR"
@@ -287,8 +227,6 @@ EOF
 echo "[7/8] 安装打好的 DEB/RPM 包..."
 if [[ "$OS_ID" =~ (ubuntu|debian) ]]; then
     sudo dpkg -i ${BUILD_DIR}/${QEMU_PKGNAME}_${QEMU_VERSION}-1_amd64.deb
-elif [[ "$OS_ID" =~ (rocky) ]]; then
-    sudo rpm -ivh ${BUILD_DIR}/${QEMU_PKGNAME}-${QEMU_VERSION}-1.x86_64.rpm || true
 fi
 
 echo "[8/8] 创建软链接 (可选)..."
@@ -303,7 +241,28 @@ qemu-system-x86_64 --version
 #######################################
 echo
 echo "==================== [嵌套虚拟化与显卡直通配置] ===================="
+set -euo pipefail
 
+# ---------- 检测系统类型 ----------
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS_ID=$ID
+    echo "检测到系统类型：$PRETTY_NAME"
+else
+    echo "无法检测系统类型，请确认系统是否受支持"
+    exit 1
+fi
+
+# ---------- 检测启动方式 ----------
+if [ -d /sys/firmware/efi ]; then
+    BOOT_MODE="EFI"
+    echo "检测到启动方式：EFI 模式"
+else
+    BOOT_MODE="BIOS"
+    echo "检测到启动方式：Legacy BIOS 模式"
+fi
+
+# ---------- 检测 CPU ----------
 CPU_MODEL=$(lscpu | grep 'Model name' | awk -F: '{print $2}' | xargs)
 echo "当前 CPU: $CPU_MODEL"
 
@@ -315,57 +274,94 @@ else
     echo "无法检测虚拟化支持，请检查 BIOS 设置"
     exit 1
 fi
-
 echo "检测到 CPU 类型：$CPU_VENDOR"
 
+# ---------- 启用嵌套虚拟化 ----------
 if [[ "$CPU_VENDOR" == "intel" ]]; then
     echo "启用 Intel 嵌套虚拟化..."
-    sudo modprobe -r kvm_intel || true
-    sudo modprobe kvm_intel nested=1
-    echo 'options kvm_intel nested=1' | sudo tee /etc/modprobe.d/kvm-nested.conf
-elif [[ "$CPU_VENDOR" == "amd" ]]; then
+    modprobe -r kvm_intel || true
+    modprobe kvm_intel nested=1
+    echo 'options kvm_intel nested=1' | tee /etc/modprobe.d/kvm-nested.conf
+else
     echo "启用 AMD 嵌套虚拟化..."
-    sudo modprobe -r kvm_amd || true
-    sudo modprobe kvm_amd nested=1
-    echo 'options kvm_amd nested=1' | sudo tee /etc/modprobe.d/kvm-nested.conf
+    modprobe -r kvm_amd || true
+    modprobe kvm_amd nested=1
+    echo 'options kvm_amd nested=1' | tee /etc/modprobe.d/kvm-nested.conf
 fi
 
+# ---------- 配置 IOMMU ----------
 echo
 echo "启用 IOMMU 支持..."
-GRUB_FILE="/etc/default/grub"
-if [[ "$CPU_VENDOR" == "intel" ]]; then
-    sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on iommu=pt"/' $GRUB_FILE
-else
-    sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amd_iommu=on iommu=pt"/' $GRUB_FILE
-fi
-sudo update-grub || sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
+GRUB_FILE=""
+if [[ "$OS_ID" =~ ^(ubuntu|debian)$ ]]; then
+    GRUB_FILE="/etc/default/grub"
+elif [[ "$OS_ID" == "rocky" ]]; then
+    if [[ "$BOOT_MODE" == "EFI" ]]; then
+        GRUB_FILE="/etc/default/grub"
+    else
+        GRUB_FILE="/etc/default/grub"
+    fi
+else
+    echo "不支持的系统类型：$OS_ID"
+    exit 1
+fi
+
+if [[ "$CPU_VENDOR" == "intel" ]]; then
+    sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on iommu=pt"/' $GRUB_FILE || \
+    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT/d' $GRUB_FILE && echo 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on iommu=pt"' >> $GRUB_FILE
+else
+    sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amd_iommu=on iommu=pt"/' $GRUB_FILE || \
+    sed -i '/^GRUB_CMDLINE_LINUX_DEFAULT/d' $GRUB_FILE && echo 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amd_iommu=on iommu=pt"' >> $GRUB_FILE
+fi
+
+# ---------- 更新 GRUB ----------
+echo "更新 GRUB 配置..."
+if [[ "$OS_ID" =~ ^(ubuntu|debian)$ ]]; then
+    update-grub
+elif [[ "$OS_ID" == "rocky" ]]; then
+    if [[ "$BOOT_MODE" == "EFI" ]]; then
+        grub2-mkconfig -o /boot/efi/EFI/rocky/grub.cfg
+    else
+        grub2-mkconfig -o /boot/grub2/grub.cfg
+    fi
+fi
+
+# ---------- 配置 VFIO ----------
 echo
 echo "配置 VFIO 模块..."
-sudo tee /etc/modules-load.d/vfio.conf > /dev/null <<EOF
+tee /etc/modules-load.d/vfio.conf > /dev/null <<EOF
 vfio
 vfio_iommu_type1
 vfio_pci
 EOF
 
-sudo modprobe vfio
-sudo modprobe vfio_iommu_type1
-sudo modprobe vfio_pci
+modprobe vfio
+modprobe vfio_iommu_type1
+modprobe vfio_pci
 lsmod | grep vfio || echo "VFIO 模块未正确加载"
 
+# ---------- 屏蔽主机显卡 ----------
 echo
 echo "屏蔽主机 NVIDIA 驱动..."
-cat <<EOF | sudo tee /etc/modprobe.d/blacklist-nvidia.conf
+tee /etc/modprobe.d/blacklist-nvidia.conf > /dev/null <<EOF
 blacklist nouveau
 blacklist nvidia
 blacklist nvidiafb
 blacklist rivafb
 EOF
 
+# ---------- 更新 initramfs ----------
 echo
 echo "更新 initramfs..."
-sudo update-initramfs -u || sudo dracut -f
+if [[ "$OS_ID" =~ ^(ubuntu|debian)$ ]]; then
+    update-initramfs -u
+elif [[ "$OS_ID" == "rocky" ]]; then
+    dracut -f
+fi
 
 echo
-echo "配置完成 请执行以下命令重启系统生效"
+echo "=============================================="
+echo "配置完成！请执行以下命令重启系统生效："
 echo "sudo reboot"
+echo "=============================================="
